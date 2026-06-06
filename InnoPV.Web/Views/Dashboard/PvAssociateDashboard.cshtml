@@ -1,8 +1,206 @@
-﻿@{
+@model InnoPV.Web.Models.Dashboard.PvAssociateDashboardViewModel
+
+@{
     ViewData["Title"] = "PV Associate Dashboard";
 }
 
-<div class="container-fluid">
-    <h3>PV Associate Dashboard</h3>
-    <p>Case intake, data entry, validity check, duplicate check and checklist completion.</p>
+<div class="container-fluid mt-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h3>PV Associate Dashboard</h3>
+            <p class="text-muted mb-0">
+                Case intake, data entry, validity check and duplicate assessment queue.
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="PvCase"
+               asp-action="Create"
+               class="btn btn-primary">
+                Create Case
+            </a>
+            <a asp-controller="CaseInbox"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                My Inbox
+            </a>
+            <a asp-controller="PvCase"
+               asp-action="Index"
+               class="btn btn-outline-primary">
+                Case List
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        @foreach (var card in Model.Cards)
+        {
+            <div class="col-sm-6 col-xl-3">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">@card.Title</h6>
+                        <h3>@card.Count</h3>
+                        <small class="text-muted">@card.Description</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-danger h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue Cases</h6>
+                    <h3 class="text-danger">@Model.OverdueCount</h3>
+                    <small class="text-muted">Cases with due date crossed</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-warning h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Due Within 7 Days</h6>
+                    <h3 class="text-warning">@Model.DueWithin7DaysCount</h3>
+                    <small class="text-muted">Upcoming SLA/TAT cases</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-info h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Returned Cases</h6>
+                    <h3 class="text-info">@Model.ReturnedCount</h3>
+                    <small class="text-muted">Cases returned for correction</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <strong>PV Associate Work Queue</strong>
+                    <span class="badge bg-secondary">@Model.TotalCases cases</span>
+                </div>
+
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Case No</th>
+                                <th>Product</th>
+                                <th>Event</th>
+                                <th>Serious</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.PendingCases.Any())
+                            {
+                                foreach (var item in Model.PendingCases)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@item.CaseNo</strong>
+                                        </td>
+                                        <td>@(item.InitialProductName ?? "-")</td>
+                                        <td>@(item.InitialEventTerm ?? "-")</td>
+                                        <td>
+                                            @if (item.IsSerious)
+                                            {
+                                                <span class="badge bg-danger">Yes</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">No</span>
+                                            }
+                                        </td>
+                                        <td>@item.Status</td>
+                                        <td>
+                                            @(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                            @if (item.IsOverdue)
+                                            {
+                                                <span class="badge bg-danger ms-1">Overdue</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-controller="PvCaseEntry"
+                                               asp-action="Patient"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Open
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No cases are currently pending for PV Associate action.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header bg-light">
+                    <strong>Status Summary</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.StatusSummary.Any())
+                    {
+                        foreach (var item in Model.StatusSummary)
+                        {
+                            <div class="d-flex justify-content-between border-bottom py-2">
+                                <span>@item.Label</span>
+                                <strong>@item.Count</strong>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted">No associate queue data available.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <strong>Upcoming SLA</strong>
+                </div>
+                <div class="card-body">
+                    @if (Model.DueSoonCases.Any())
+                    {
+                        foreach (var item in Model.DueSoonCases)
+                        {
+                            <div class="border-bottom py-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong>@item.CaseNo</strong>
+                                    <span>@(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM") : "-")</span>
+                                </div>
+                                <small class="text-muted">@item.Status</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted">No cases due within 7 days.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -5,6 +5,7 @@ using InnoPV.Web.Models.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace InnoPV.Web.Controllers;
 
@@ -160,20 +161,366 @@ public class DashboardController : Controller
     }
 
     [Authorize(Policy = AuthorizationPolicies.AdminOrPvAssociate)]
-    public IActionResult PvAssociateDashboard()
+    public async Task<IActionResult> PvAssociateDashboard()
     {
-        return View();
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var today = DateTime.UtcNow.Date;
+        var next7Days = today.AddDays(7);
+
+        var associateStatuses = new[]
+        {
+            PvCaseStatus.Draft,
+            PvCaseStatus.DataEntryInProgress,
+            PvCaseStatus.ValidityPending,
+            PvCaseStatus.InvalidFollowUpRequired,
+            PvCaseStatus.DuplicateCheckPending,
+            PvCaseStatus.PvAssociateChecklistPending,
+            PvCaseStatus.ReturnedByPvManager,
+            PvCaseStatus.AdditionalInformationRequired,
+            PvCaseStatus.Reopened,
+            PvCaseStatus.ReturnedToPvAssociate
+        };
+
+        var cases = await _context.PvCases
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                (x.CurrentAssignedRole == AppRoles.PvAssociate ||
+                 (x.CreatedBy == currentUserId && associateStatuses.Contains(x.Status))))
+            .OrderBy(x => x.DueDate)
+            .ThenByDescending(x => x.CreatedOnUtc)
+            .Select(x => new InnoPV.Web.Models.CaseInbox.CaseInboxItemViewModel
+            {
+                Id = x.Id,
+                CaseNo = x.CaseNo,
+                CaseSource = x.CaseSource,
+                ReceiptDate = x.ReceiptDate,
+                InitialReporterName = x.InitialReporterName,
+                InitialPatientIdentifier = x.InitialPatientIdentifier,
+                InitialProductName = x.InitialProductName,
+                InitialEventTerm = x.InitialEventTerm,
+                IsValidCase = x.IsValidCase,
+                IsSerious = x.IsSerious,
+                DueDate = x.DueDate,
+                Status = x.Status,
+                CurrentAssignedRole = x.CurrentAssignedRole,
+                CreatedBy = x.CreatedBy,
+                CreatedOnUtc = x.CreatedOnUtc
+            })
+            .ToListAsync();
+
+        var draftCount = cases.Count(x => x.Status == PvCaseStatus.Draft);
+        var dataEntryCount = cases.Count(x => x.Status == PvCaseStatus.DataEntryInProgress);
+        var validityPendingCount = cases.Count(x =>
+            x.Status == PvCaseStatus.ValidityPending ||
+            x.Status == PvCaseStatus.InvalidFollowUpRequired);
+        var duplicateCheckPendingCount = cases.Count(x =>
+            x.Status == PvCaseStatus.DuplicateCheckPending);
+        var returnedCount = cases.Count(x =>
+            x.Status == PvCaseStatus.ReturnedByPvManager ||
+            x.Status == PvCaseStatus.ReturnedToPvAssociate);
+        var overdueCount = cases.Count(x =>
+            x.DueDate.HasValue &&
+            x.DueDate.Value.Date < today);
+
+        var dueSoonCases = cases
+            .Where(x =>
+                x.DueDate.HasValue &&
+                x.DueDate.Value.Date >= today &&
+                x.DueDate.Value.Date <= next7Days)
+            .OrderBy(x => x.DueDate)
+            .ToList();
+
+        var model = new PvAssociateDashboardViewModel
+        {
+            TotalCases = cases.Count,
+            DraftCount = draftCount,
+            DataEntryCount = dataEntryCount,
+            ValidityPendingCount = validityPendingCount,
+            DuplicateCheckPendingCount = duplicateCheckPendingCount,
+            ReturnedCount = returnedCount,
+            OverdueCount = overdueCount,
+            DueWithin7DaysCount = dueSoonCases.Count,
+            Cards = new List<DashboardCountCardViewModel>
+            {
+                new()
+                {
+                    Title = "Associate Queue",
+                    Count = cases.Count,
+                    Description = "Cases assigned or created by you"
+                },
+                new()
+                {
+                    Title = "Data Entry",
+                    Count = draftCount + dataEntryCount,
+                    Description = "Draft and in-progress cases"
+                },
+                new()
+                {
+                    Title = "Validity Pending",
+                    Count = validityPendingCount,
+                    Description = "Validity or follow-up action needed"
+                },
+                new()
+                {
+                    Title = "Duplicate Check",
+                    Count = duplicateCheckPendingCount,
+                    Description = "Cases awaiting duplicate assessment"
+                }
+            },
+            StatusSummary = cases
+                .GroupBy(x => x.Status.ToString())
+                .OrderBy(x => x.Key)
+                .Select(x => new DashboardChartItemViewModel
+                {
+                    Label = x.Key,
+                    Count = x.Count()
+                })
+                .ToList(),
+            PendingCases = cases.Take(10).ToList(),
+            DueSoonCases = dueSoonCases.Take(10).ToList()
+        };
+
+        return View(model);
     }
 
     [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
-    public IActionResult PvManagerDashboard()
+    public async Task<IActionResult> PvManagerDashboard()
     {
-        return View();
+        var today = DateTime.UtcNow.Date;
+        var next7Days = today.AddDays(7);
+
+        var managerStatuses = new[]
+        {
+            PvCaseStatus.SubmittedToPvManager,
+            PvCaseStatus.PvManagerReviewPending,
+            PvCaseStatus.PvManagerChecklistPending,
+            PvCaseStatus.ResubmittedToPvManager,
+            PvCaseStatus.ReturnedByMedicalReviewer,
+            PvCaseStatus.PvManagerReviewInProgress,
+            PvCaseStatus.ReturnedToPvManager
+        };
+
+        var cases = await _context.PvCases
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                (x.CurrentAssignedRole == AppRoles.PvManager ||
+                 managerStatuses.Contains(x.Status)))
+            .OrderBy(x => x.DueDate)
+            .ThenByDescending(x => x.CreatedOnUtc)
+            .Select(x => new InnoPV.Web.Models.CaseInbox.CaseInboxItemViewModel
+            {
+                Id = x.Id,
+                CaseNo = x.CaseNo,
+                CaseSource = x.CaseSource,
+                ReceiptDate = x.ReceiptDate,
+                InitialReporterName = x.InitialReporterName,
+                InitialPatientIdentifier = x.InitialPatientIdentifier,
+                InitialProductName = x.InitialProductName,
+                InitialEventTerm = x.InitialEventTerm,
+                IsValidCase = x.IsValidCase,
+                IsSerious = x.IsSerious,
+                DueDate = x.DueDate,
+                Status = x.Status,
+                CurrentAssignedRole = x.CurrentAssignedRole,
+                CreatedBy = x.CreatedBy,
+                CreatedOnUtc = x.CreatedOnUtc
+            })
+            .ToListAsync();
+
+        var pendingReviewCount = cases.Count(x =>
+            x.Status == PvCaseStatus.SubmittedToPvManager ||
+            x.Status == PvCaseStatus.PvManagerReviewPending ||
+            x.Status == PvCaseStatus.ResubmittedToPvManager ||
+            x.Status == PvCaseStatus.PvManagerReviewInProgress ||
+            x.Status == PvCaseStatus.ReturnedToPvManager);
+
+        var checklistPendingCount = cases.Count(x =>
+            x.Status == PvCaseStatus.PvManagerChecklistPending);
+
+        var returnedByMedicalReviewerCount = cases.Count(x =>
+            x.Status == PvCaseStatus.ReturnedByMedicalReviewer);
+
+        var overdueCount = cases.Count(x =>
+            x.DueDate.HasValue &&
+            x.DueDate.Value.Date < today);
+
+        var dueSoonCases = cases
+            .Where(x =>
+                x.DueDate.HasValue &&
+                x.DueDate.Value.Date >= today &&
+                x.DueDate.Value.Date <= next7Days)
+            .OrderBy(x => x.DueDate)
+            .ToList();
+
+        var model = new PvManagerDashboardViewModel
+        {
+            TotalCases = cases.Count,
+            PendingReviewCount = pendingReviewCount,
+            ChecklistPendingCount = checklistPendingCount,
+            ReturnedByMedicalReviewerCount = returnedByMedicalReviewerCount,
+            OverdueCount = overdueCount,
+            DueWithin7DaysCount = dueSoonCases.Count,
+            Cards = new List<DashboardCountCardViewModel>
+            {
+                new()
+                {
+                    Title = "Manager Queue",
+                    Count = cases.Count,
+                    Description = "Cases assigned to PV Manager"
+                },
+                new()
+                {
+                    Title = "Pending Review",
+                    Count = pendingReviewCount,
+                    Description = "QC review in progress or pending"
+                },
+                new()
+                {
+                    Title = "Checklist Pending",
+                    Count = checklistPendingCount,
+                    Description = "PV Manager checklist action needed"
+                },
+                new()
+                {
+                    Title = "Returned Cases",
+                    Count = returnedByMedicalReviewerCount,
+                    Description = "Returned by Medical Reviewer"
+                }
+            },
+            StatusSummary = cases
+                .GroupBy(x => x.Status.ToString())
+                .OrderBy(x => x.Key)
+                .Select(x => new DashboardChartItemViewModel
+                {
+                    Label = x.Key,
+                    Count = x.Count()
+                })
+                .ToList(),
+            PendingCases = cases.Take(10).ToList(),
+            DueSoonCases = dueSoonCases.Take(10).ToList()
+        };
+
+        return View(model);
     }
 
     [Authorize(Policy = AuthorizationPolicies.AdminOrMedicalReviewer)]
-    public IActionResult MedicalReviewerDashboard()
+    public async Task<IActionResult> MedicalReviewerDashboard()
     {
-        return View();
+        var today = DateTime.UtcNow.Date;
+        var next7Days = today.AddDays(7);
+
+        var medicalReviewerStatuses = new[]
+        {
+            PvCaseStatus.ForwardedToMedicalReviewer,
+            PvCaseStatus.MedicalReviewPending,
+            PvCaseStatus.MedicalReviewerChecklistPending,
+            PvCaseStatus.MedicallyApproved,
+            PvCaseStatus.SubmittedToMedicalReviewer,
+            PvCaseStatus.MedicalReviewInProgress
+        };
+
+        var cases = await _context.PvCases
+            .AsNoTracking()
+            .Where(x =>
+                !x.IsDeleted &&
+                (x.CurrentAssignedRole == AppRoles.MedicalReviewer ||
+                 medicalReviewerStatuses.Contains(x.Status)))
+            .OrderBy(x => x.DueDate)
+            .ThenByDescending(x => x.CreatedOnUtc)
+            .Select(x => new InnoPV.Web.Models.CaseInbox.CaseInboxItemViewModel
+            {
+                Id = x.Id,
+                CaseNo = x.CaseNo,
+                CaseSource = x.CaseSource,
+                ReceiptDate = x.ReceiptDate,
+                InitialReporterName = x.InitialReporterName,
+                InitialPatientIdentifier = x.InitialPatientIdentifier,
+                InitialProductName = x.InitialProductName,
+                InitialEventTerm = x.InitialEventTerm,
+                IsValidCase = x.IsValidCase,
+                IsSerious = x.IsSerious,
+                DueDate = x.DueDate,
+                Status = x.Status,
+                CurrentAssignedRole = x.CurrentAssignedRole,
+                CreatedBy = x.CreatedBy,
+                CreatedOnUtc = x.CreatedOnUtc
+            })
+            .ToListAsync();
+
+        var assessmentPendingCount = cases.Count(x =>
+            x.Status == PvCaseStatus.ForwardedToMedicalReviewer ||
+            x.Status == PvCaseStatus.MedicalReviewPending ||
+            x.Status == PvCaseStatus.SubmittedToMedicalReviewer ||
+            x.Status == PvCaseStatus.MedicalReviewInProgress);
+
+        var checklistPendingCount = cases.Count(x =>
+            x.Status == PvCaseStatus.MedicalReviewerChecklistPending);
+
+        var approvedCount = cases.Count(x =>
+            x.Status == PvCaseStatus.MedicallyApproved);
+
+        var overdueCount = cases.Count(x =>
+            x.DueDate.HasValue &&
+            x.DueDate.Value.Date < today);
+
+        var dueSoonCases = cases
+            .Where(x =>
+                x.DueDate.HasValue &&
+                x.DueDate.Value.Date >= today &&
+                x.DueDate.Value.Date <= next7Days)
+            .OrderBy(x => x.DueDate)
+            .ToList();
+
+        var model = new MedicalReviewerDashboardViewModel
+        {
+            TotalCases = cases.Count,
+            AssessmentPendingCount = assessmentPendingCount,
+            ChecklistPendingCount = checklistPendingCount,
+            ApprovedCount = approvedCount,
+            OverdueCount = overdueCount,
+            DueWithin7DaysCount = dueSoonCases.Count,
+            Cards = new List<DashboardCountCardViewModel>
+            {
+                new()
+                {
+                    Title = "Reviewer Queue",
+                    Count = cases.Count,
+                    Description = "Cases assigned to Medical Reviewer"
+                },
+                new()
+                {
+                    Title = "Assessment Pending",
+                    Count = assessmentPendingCount,
+                    Description = "Medical assessment required"
+                },
+                new()
+                {
+                    Title = "Checklist Pending",
+                    Count = checklistPendingCount,
+                    Description = "Reviewer checklist action needed"
+                },
+                new()
+                {
+                    Title = "Approved",
+                    Count = approvedCount,
+                    Description = "Cases medically approved"
+                }
+            },
+            StatusSummary = cases
+                .GroupBy(x => x.Status.ToString())
+                .OrderBy(x => x.Key)
+                .Select(x => new DashboardChartItemViewModel
+                {
+                    Label = x.Key,
+                    Count = x.Count()
+                })
+                .ToList(),
+            PendingCases = cases.Take(10).ToList(),
+            DueSoonCases = dueSoonCases.Take(10).ToList()
+        };
+
+        return View(model);
     }
 }
