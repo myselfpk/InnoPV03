@@ -6,6 +6,8 @@ public interface ISlaAlertService
 {
     Task<SlaAlertPreviewViewModel> GetPreviewAsync();
 
+    Task<SlaAlertPreviewViewModel> GetPreviewForUserAsync(string? userId);
+
     Task<SlaAlertSendResultViewModel> SendDueSoonAlertsAsync();
 
     Task<SlaAlertSendResultViewModel> SendOverdueAlertsAsync();

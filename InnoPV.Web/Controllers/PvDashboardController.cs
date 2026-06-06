@@ -5,6 +5,7 @@ using InnoPV.Web.Models.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace InnoPV.Web.Controllers;
 
@@ -21,13 +22,79 @@ public class PvDashboardController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var today = DateTime.UtcNow.Date;
         var next7Days = today.AddDays(7);
         var last12MonthsStart = new DateTime(today.Year, today.Month, 1).AddMonths(-11);
 
-        var cases = await _context.PvCases
+        var query = _context.PvCases
             .AsNoTracking()
-            .Where(x => !x.IsDeleted)
+            .Where(x => !x.IsDeleted);
+
+        if (!User.IsInRole(AppRoles.Admin))
+        {
+            if (User.IsInRole(AppRoles.PvAssociate))
+            {
+                var associateStatuses = new[]
+                {
+                    PvCaseStatus.Draft,
+                    PvCaseStatus.DataEntryInProgress,
+                    PvCaseStatus.ValidityPending,
+                    PvCaseStatus.InvalidFollowUpRequired,
+                    PvCaseStatus.DuplicateCheckPending,
+                    PvCaseStatus.PvAssociateChecklistPending,
+                    PvCaseStatus.ReturnedByPvManager,
+                    PvCaseStatus.AdditionalInformationRequired,
+                    PvCaseStatus.Reopened,
+                    PvCaseStatus.ReturnedToPvAssociate
+                };
+
+                query = query.Where(x =>
+                    x.CurrentAssignedUserId == currentUserId ||
+                    (x.CreatedBy == currentUserId && associateStatuses.Contains(x.Status)));
+            }
+            else if (User.IsInRole(AppRoles.PvManager))
+            {
+                var managerStatuses = new[]
+                {
+                    PvCaseStatus.SubmittedToPvManager,
+                    PvCaseStatus.PvManagerReviewPending,
+                    PvCaseStatus.PvManagerChecklistPending,
+                    PvCaseStatus.ResubmittedToPvManager,
+                    PvCaseStatus.ReturnedByMedicalReviewer,
+                    PvCaseStatus.PvManagerReviewInProgress,
+                    PvCaseStatus.ReturnedToPvManager
+                };
+
+                query = query.Where(x =>
+                    managerStatuses.Contains(x.Status) &&
+                    (x.CurrentAssignedUserId == currentUserId ||
+                     x.CreatedBy == currentUserId));
+            }
+            else if (User.IsInRole(AppRoles.MedicalReviewer))
+            {
+                var medicalReviewerStatuses = new[]
+                {
+                    PvCaseStatus.ForwardedToMedicalReviewer,
+                    PvCaseStatus.MedicalReviewPending,
+                    PvCaseStatus.MedicalReviewerChecklistPending,
+                    PvCaseStatus.MedicallyApproved,
+                    PvCaseStatus.SubmittedToMedicalReviewer,
+                    PvCaseStatus.MedicalReviewInProgress
+                };
+
+                query = query.Where(x =>
+                    medicalReviewerStatuses.Contains(x.Status) &&
+                    (x.CurrentAssignedUserId == currentUserId ||
+                     x.CreatedBy == currentUserId));
+            }
+            else
+            {
+                query = query.Where(x => x.CurrentAssignedUserId == currentUserId || x.CreatedBy == currentUserId);
+            }
+        }
+
+        var cases = await query
             .Select(x => new
             {
                 x.Id,

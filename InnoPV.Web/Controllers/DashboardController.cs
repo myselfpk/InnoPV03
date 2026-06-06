@@ -185,7 +185,7 @@ public class DashboardController : Controller
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted &&
-                (x.CurrentAssignedRole == AppRoles.PvAssociate ||
+                (x.CurrentAssignedUserId == currentUserId ||
                  (x.CreatedBy == currentUserId && associateStatuses.Contains(x.Status))))
             .OrderBy(x => x.DueDate)
             .ThenByDescending(x => x.CreatedOnUtc)
@@ -287,6 +287,7 @@ public class DashboardController : Controller
     [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
     public async Task<IActionResult> PvManagerDashboard()
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var today = DateTime.UtcNow.Date;
         var next7Days = today.AddDays(7);
 
@@ -305,8 +306,9 @@ public class DashboardController : Controller
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted &&
-                (x.CurrentAssignedRole == AppRoles.PvManager ||
-                 managerStatuses.Contains(x.Status)))
+                managerStatuses.Contains(x.Status) &&
+                (x.CurrentAssignedUserId == currentUserId ||
+                 x.CreatedBy == currentUserId))
             .OrderBy(x => x.DueDate)
             .ThenByDescending(x => x.CreatedOnUtc)
             .Select(x => new InnoPV.Web.Models.CaseInbox.CaseInboxItemViewModel
@@ -368,7 +370,7 @@ public class DashboardController : Controller
                 {
                     Title = "Manager Queue",
                     Count = cases.Count,
-                    Description = "Cases assigned to PV Manager"
+                    Description = "Cases assigned to you"
                 },
                 new()
                 {
@@ -408,6 +410,7 @@ public class DashboardController : Controller
     [Authorize(Policy = AuthorizationPolicies.AdminOrMedicalReviewer)]
     public async Task<IActionResult> MedicalReviewerDashboard()
     {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var today = DateTime.UtcNow.Date;
         var next7Days = today.AddDays(7);
 
@@ -425,8 +428,9 @@ public class DashboardController : Controller
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted &&
-                (x.CurrentAssignedRole == AppRoles.MedicalReviewer ||
-                 medicalReviewerStatuses.Contains(x.Status)))
+                medicalReviewerStatuses.Contains(x.Status) &&
+                (x.CurrentAssignedUserId == currentUserId ||
+                 x.CreatedBy == currentUserId))
             .OrderBy(x => x.DueDate)
             .ThenByDescending(x => x.CreatedOnUtc)
             .Select(x => new InnoPV.Web.Models.CaseInbox.CaseInboxItemViewModel
@@ -487,7 +491,7 @@ public class DashboardController : Controller
                 {
                     Title = "Reviewer Queue",
                     Count = cases.Count,
-                    Description = "Cases assigned to Medical Reviewer"
+                    Description = "Cases assigned to you"
                 },
                 new()
                 {

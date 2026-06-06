@@ -31,10 +31,20 @@ public class SlaAlertService : ISlaAlertService
 
     public async Task<SlaAlertPreviewViewModel> GetPreviewAsync()
     {
-        var t7Cases = await GetEscalationCasesAsync(_settings.T7Days, "T-7");
-        var t3Cases = await GetEscalationCasesAsync(_settings.T3Days, "T-3");
-        var t1Cases = await GetEscalationCasesAsync(_settings.T1Days, "T-1");
-        var overdueCases = await GetOverdueCasesAsync();
+        return await GetPreviewAsync(userId: null);
+    }
+
+    public async Task<SlaAlertPreviewViewModel> GetPreviewForUserAsync(string? userId)
+    {
+        return await GetPreviewAsync(userId);
+    }
+
+    private async Task<SlaAlertPreviewViewModel> GetPreviewAsync(string? userId)
+    {
+        var t7Cases = await GetEscalationCasesAsync(_settings.T7Days, "T-7", userId);
+        var t3Cases = await GetEscalationCasesAsync(_settings.T3Days, "T-3", userId);
+        var t1Cases = await GetEscalationCasesAsync(_settings.T1Days, "T-1", userId);
+        var overdueCases = await GetOverdueCasesAsync(userId);
 
         var dueSoonCases = t7Cases
             .Concat(t3Cases)
@@ -126,7 +136,10 @@ public class SlaAlertService : ISlaAlertService
             .ToList();
     }
 
-    private async Task<List<SlaAlertCaseItemViewModel>> GetEscalationCasesAsync(int targetDays, string escalationLevel)
+    private async Task<List<SlaAlertCaseItemViewModel>> GetEscalationCasesAsync(
+        int targetDays,
+        string escalationLevel,
+        string? userId = null)
     {
         var today = DateTime.UtcNow.Date;
 
@@ -139,10 +152,12 @@ public class SlaAlertService : ISlaAlertService
                 x.DueDate.Value.Date == today.AddDays(targetDays) &&
                 !closedStatuses.Contains(x.Status));
 
+        query = ApplyUserFilter(query, userId);
+
         return await BuildCaseItemsAsync(query, escalationLevel);
     }
 
-    private async Task<List<SlaAlertCaseItemViewModel>> GetOverdueCasesAsync()
+    private async Task<List<SlaAlertCaseItemViewModel>> GetOverdueCasesAsync(string? userId = null)
     {
         var today = DateTime.UtcNow.Date;
 
@@ -155,7 +170,23 @@ public class SlaAlertService : ISlaAlertService
                 x.DueDate.Value.Date < today &&
                 !closedStatuses.Contains(x.Status));
 
+        query = ApplyUserFilter(query, userId);
+
         return await BuildCaseItemsAsync(query, "Overdue");
+    }
+
+    private static IQueryable<Domain.Entities.PvCase> ApplyUserFilter(
+        IQueryable<Domain.Entities.PvCase> query,
+        string? userId)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return query;
+        }
+
+        return query.Where(x =>
+            x.CreatedBy == userId ||
+            x.CurrentAssignedUserId == userId);
     }
 
     private async Task<List<SlaAlertCaseItemViewModel>> BuildCaseItemsAsync(
@@ -282,7 +313,6 @@ public class SlaAlertService : ISlaAlertService
                 if (!string.IsNullOrWhiteSpace(item.CurrentAssignedUserEmail))
                 {
                     recipients.Add(item.CurrentAssignedUserEmail);
-                    continue;
                 }
 
                 if (!string.IsNullOrWhiteSpace(item.CurrentAssignedRole))
@@ -291,7 +321,7 @@ public class SlaAlertService : ISlaAlertService
 
                     recipients.AddRange(
                         usersInRole
-                            .Where(x => !string.IsNullOrWhiteSpace(x.Email))
+                            .Where(x => x.IsActive && !string.IsNullOrWhiteSpace(x.Email))
                             .Select(x => x.Email!));
                 }
             }
@@ -303,7 +333,7 @@ public class SlaAlertService : ISlaAlertService
 
             recipients.AddRange(
                 admins
-                    .Where(x => !string.IsNullOrWhiteSpace(x.Email))
+                    .Where(x => x.IsActive && !string.IsNullOrWhiteSpace(x.Email))
                     .Select(x => x.Email!));
         }
 
@@ -313,7 +343,7 @@ public class SlaAlertService : ISlaAlertService
 
             recipients.AddRange(
                 pvManagers
-                    .Where(x => !string.IsNullOrWhiteSpace(x.Email))
+                    .Where(x => x.IsActive && !string.IsNullOrWhiteSpace(x.Email))
                     .Select(x => x.Email!));
         }
 

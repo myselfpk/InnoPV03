@@ -94,49 +94,53 @@
         </div>
     </div>
 
-    <div class="card shadow-sm mb-3">
-        <div class="card-header bg-light">
-            <strong>Manual Alert Actions</strong>
+    @if (User.IsInRole(InnoPV.Domain.Identity.AppRoles.Admin) ||
+         User.IsInRole(InnoPV.Domain.Identity.AppRoles.PvManager))
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Manual Alert Actions</strong>
+            </div>
+
+            <div class="card-body">
+                <form asp-controller="SlaAlert"
+                      asp-action="SendDueSoonAlerts"
+                      method="post"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to send due soon alerts?');">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit" class="btn btn-warning">
+                        Send Due Soon Alerts
+                    </button>
+                </form>
+
+                <form asp-controller="SlaAlert"
+                      asp-action="SendOverdueAlerts"
+                      method="post"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to send overdue alerts?');">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit" class="btn btn-danger">
+                        Send Overdue Alerts
+                    </button>
+                </form>
+
+                <form asp-controller="SlaAlert"
+                      asp-action="SendAllAlerts"
+                      method="post"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to send all SLA alerts?');">
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit" class="btn btn-primary">
+                        Send All Alerts
+                    </button>
+                </form>
+            </div>
         </div>
-
-        <div class="card-body">
-            <form asp-controller="SlaAlert"
-                  asp-action="SendDueSoonAlerts"
-                  method="post"
-                  class="d-inline"
-                  onsubmit="return confirm('Are you sure you want to send due soon alerts?');">
-                @Html.AntiForgeryToken()
-
-                <button type="submit" class="btn btn-warning">
-                    Send Due Soon Alerts
-                </button>
-            </form>
-
-            <form asp-controller="SlaAlert"
-                  asp-action="SendOverdueAlerts"
-                  method="post"
-                  class="d-inline"
-                  onsubmit="return confirm('Are you sure you want to send overdue alerts?');">
-                @Html.AntiForgeryToken()
-
-                <button type="submit" class="btn btn-danger">
-                    Send Overdue Alerts
-                </button>
-            </form>
-
-            <form asp-controller="SlaAlert"
-                  asp-action="SendAllAlerts"
-                  method="post"
-                  class="d-inline"
-                  onsubmit="return confirm('Are you sure you want to send all SLA alerts?');">
-                @Html.AntiForgeryToken()
-
-                <button type="submit" class="btn btn-primary">
-                    Send All Alerts
-                </button>
-            </form>
-        </div>
-    </div>
+    }
 
     <div class="card shadow-sm mb-3">
         <div class="card-header bg-warning">

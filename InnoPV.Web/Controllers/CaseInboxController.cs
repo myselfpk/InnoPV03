@@ -49,7 +49,7 @@ public class CaseInboxController : Controller
             };
 
             query = query.Where(x =>
-                x.CurrentAssignedRole == AppRoles.PvAssociate ||
+                x.CurrentAssignedUserId == currentUserId ||
                 (x.CreatedBy == currentUserId && associateStatuses.Contains(x.Status)));
         }
         else if (role == AppRoles.PvManager)

@@ -2,10 +2,11 @@
 using InnoPV.Web.Services.SlaAlerts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
+[Authorize(Policy = AuthorizationPolicies.AuthenticatedPvUser)]
 public class SlaAlertController : Controller
 {
     private readonly ISlaAlertService _slaAlertService;
@@ -18,12 +19,15 @@ public class SlaAlertController : Controller
     [HttpGet]
     public async Task<IActionResult> Index()
     {
-        var model = await _slaAlertService.GetPreviewAsync();
+        var model = User.IsInRole(AppRoles.Admin)
+            ? await _slaAlertService.GetPreviewAsync()
+            : await _slaAlertService.GetPreviewForUserAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         return View(model);
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendDueSoonAlerts()
     {
@@ -36,6 +40,7 @@ public class SlaAlertController : Controller
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendOverdueAlerts()
     {
@@ -48,6 +53,7 @@ public class SlaAlertController : Controller
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SendAllAlerts()
     {
