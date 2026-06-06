@@ -1,0 +1,115 @@
+﻿@model List<InnoPV.Web.Models.Admin.UserListItemViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>User Management</h3>
+            <p class="text-muted mb-0">Create, view, activate and deactivate InnoPV users.</p>
+        </div>
+
+        <a asp-controller="Admin" asp-action="CreateUser" class="btn btn-primary">
+            + Create User
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Users</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Designation</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th style="width:180px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@user.FullName</td>
+                                <td>@user.Email</td>
+                                <td>@user.Designation</td>
+                                <td>@user.Department</td>
+                                <td>@user.Roles</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <form asp-controller="Admin"
+                                          asp-action="ToggleUserStatus"
+                                          method="post"
+                                          onsubmit="return confirm('Are you sure you want to change this user status?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@user.UserId" />
+
+                                        @if (user.IsActive)
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                Deactivate
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                Activate
+                                            </button>
+                                        }
+                                    </form>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                No users found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

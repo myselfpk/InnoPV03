@@ -1,0 +1,107 @@
+﻿@model List<InnoPV.Web.Models.PvCaseEntry.CaseAttachmentViewModel>
+
+@{
+    ViewData["Title"] = "Attachments";
+
+    var caseId = (long)ViewBag.PvCaseId;
+    var caseNo = Convert.ToString(ViewBag.CaseNo);
+    var isReadOnly = Convert.ToBoolean(ViewBag.IsReadOnly ?? false);
+
+    ViewBag.ActiveTab = "Attachments";
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4>Attachments</h4>
+            <p class="text-muted mb-0">
+                Case No: <strong>@caseNo</strong>
+            </p>
+        </div>
+
+        @if (!isReadOnly)
+        {
+            <a asp-controller="PvCaseEntry"
+               asp-action="UploadAttachment"
+               asp-route-caseId="@caseId"
+               class="btn btn-primary">
+                + Upload Attachment
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Attachment List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Attachment Type</th>
+                        <th>File Name</th>
+                        <th>Content Type</th>
+                        <th>Size</th>
+                        <th>Description</th>
+                        <th>Uploaded On</th>
+                        <th style="width:100px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.AttachmentType</td>
+                                <td>@item.OriginalFileName</td>
+                                <td>@item.ContentType</td>
+                                <td>
+                                    @(Math.Round(item.FileSizeBytes / 1024.0, 2)) KB
+                                </td>
+                                <td>@item.Description</td>
+                                <td>@item.UploadedOnUtc.ToString("dd-MMM-yyyy HH:mm")</td>
+                                <td>
+                                    <a asp-controller="PvCaseEntry"
+                                       asp-action="DownloadAttachment"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Download
+                                    </a>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                No attachments uploaded.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

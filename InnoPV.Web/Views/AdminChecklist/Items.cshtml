@@ -1,0 +1,141 @@
+﻿@model List<InnoPV.Web.Models.Admin.ChecklistItemViewModel>
+
+@{
+    ViewData["Title"] = "Checklist Items";
+
+    var checklistMasterId = (long)ViewBag.ChecklistMasterId;
+    var checklistName = Convert.ToString(ViewBag.ChecklistName);
+    var applicableRole = Convert.ToString(ViewBag.ApplicableRole);
+    var applicableStage = Convert.ToString(ViewBag.ApplicableStage);
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Checklist Items</h3>
+            <p class="text-muted mb-0">
+                <strong>@checklistName</strong> |
+                Role: <strong>@applicableRole</strong> |
+                Stage: <strong>@applicableStage</strong>
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="AdminChecklist"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back
+            </a>
+
+            <a asp-controller="AdminChecklist"
+               asp-action="CreateItem"
+               asp-route-checklistMasterId="@checklistMasterId"
+               class="btn btn-primary">
+                + Add Item
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Checklist Item List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Checklist Item</th>
+                        <th style="width:130px;">Mandatory</th>
+                        <th style="width:100px;">Order</th>
+                        <th style="width:100px;">Status</th>
+                        <th style="width:190px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.ItemText</td>
+                                <td>
+                                    @if (item.IsMandatory)
+                                    {
+                                        <span class="badge bg-primary">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">No</span>
+                                    }
+                                </td>
+                                <td>@item.DisplayOrder</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-controller="AdminChecklist"
+                                       asp-action="EditItem"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Edit
+                                    </a>
+
+                                    <form asp-controller="AdminChecklist"
+                                          asp-action="ToggleItemStatus"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to change this checklist item status?');">
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="id" value="@item.Id" />
+
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            @(item.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                No checklist items found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

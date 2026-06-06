@@ -1,0 +1,343 @@
+﻿@model InnoPV.Web.Models.CaseCompleteReport.CaseCompleteReportIndexViewModel
+
+@{
+    ViewData["Title"] = "Complete Case Report";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Complete Case Report</h3>
+            <p class="text-muted mb-0">
+                Filter and export complete PV case details in PDF, Word and Excel format.
+            </p>
+        </div>
+
+        <a asp-controller="CaseReport"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Reports
+        </a>
+    </div>
+
+    <partial name="_TempDataAlerts" />
+
+    <form method="get" autocomplete="off">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Report Filters</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Case No</label>
+                        <input name="CaseNo"
+                               value="@Model.Filters.CaseNo"
+                               class="form-control"
+                               placeholder="Enter case no" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Product Name</label>
+                        <input name="ProductName"
+                               value="@Model.Filters.ProductName"
+                               class="form-control"
+                               placeholder="Enter product name" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Adverse Event</label>
+                        <input name="EventTerm"
+                               value="@Model.Filters.EventTerm"
+                               class="form-control"
+                               placeholder="Enter adverse event term" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Case Status</label>
+                        <select name="Status" class="form-select">
+                            <option value="">-- All Status --</option>
+
+                            @foreach (var item in Model.Filters.StatusOptions)
+                            {
+                                if (Model.Filters.Status.HasValue &&
+                                    item.Value == Model.Filters.Status.Value.ToString())
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Seriousness</label>
+                        <select name="IsSerious" class="form-select">
+                            <option value="">-- All --</option>
+
+                            @if (Model.Filters.IsSerious == true)
+                            {
+                                <option value="true" selected>Serious</option>
+                                <option value="false">Non-serious</option>
+                            }
+                            else if (Model.Filters.IsSerious == false)
+                            {
+                                <option value="true">Serious</option>
+                                <option value="false" selected>Non-serious</option>
+                            }
+                            else
+                            {
+                                <option value="true">Serious</option>
+                                <option value="false">Non-serious</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Validity</label>
+                        <select name="IsValidCase" class="form-select">
+                            <option value="">-- All --</option>
+
+                            @if (Model.Filters.IsValidCase == true)
+                            {
+                                <option value="true" selected>Valid</option>
+                                <option value="false">Invalid</option>
+                            }
+                            else if (Model.Filters.IsValidCase == false)
+                            {
+                                <option value="true">Valid</option>
+                                <option value="false" selected>Invalid</option>
+                            }
+                            else
+                            {
+                                <option value="true">Valid</option>
+                                <option value="false">Invalid</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Receipt Date From</label>
+                        <input name="ReceiptDateFrom"
+                               value="@(Model.Filters.ReceiptDateFrom.HasValue ? Model.Filters.ReceiptDateFrom.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Receipt Date To</label>
+                        <input name="ReceiptDateTo"
+                               value="@(Model.Filters.ReceiptDateTo.HasValue ? Model.Filters.ReceiptDateTo.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+                </div>
+
+                <button type="submit"
+                        formaction="@Url.Action("Index", "CaseCompleteReport")"
+                        formmethod="get"
+                        class="btn btn-primary">
+                        Search
+                </button>
+
+                <a asp-controller="CaseCompleteReport"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total</h6>
+                    <h3>@Model.TotalCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Valid</h6>
+                    <h3>@Model.ValidCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Invalid</h6>
+                    <h3>@Model.InvalidCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Serious</h6>
+                    <h3>@Model.SeriousCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Non-serious</h6>
+                    <h3>@Model.NonSeriousCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Closed</h6>
+                    <h3>@Model.ClosedCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Report Result</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:60px;">#</th>
+                            <th>Case No</th>
+                            <th>Source</th>
+                            <th>Receipt Date</th>
+                            <th>Patient</th>
+                            <th>Reporter</th>
+                            <th>Product</th>
+                            <th>Event</th>
+                            <th>Validity</th>
+                            <th>Seriousness</th>
+                            <th>Status</th>
+                            <th>Assigned Role</th>
+                            <th style="width:260px;">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model.Cases.Any())
+                        {
+                            var index = 1;
+
+                            foreach (var item in Model.Cases)
+                            {
+                                <tr>
+                                    <td>@index</td>
+
+                                    <td>
+                                        <strong>
+                                            @item.CaseNo
+                                        </strong>
+                                    </td>
+
+                                    <td>@item.CaseSource</td>
+
+                                    <td>@item.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+
+                                    <td>@item.InitialPatientIdentifier</td>
+
+                                    <td>@item.InitialReporterName</td>
+
+                                    <td>@item.InitialProductName</td>
+
+                                    <td>@item.InitialEventTerm</td>
+
+                                    <td>
+                                        @if (item.IsValidCase)
+                                        {
+                                            <span class="badge bg-success">Valid</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Invalid</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (item.IsSerious)
+                                        {
+                                            <span class="badge bg-danger">Serious</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Non-serious</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            @item.Status
+                                        </span>
+                                    </td>
+
+                                    <td>@item.CurrentAssignedRole</td>
+
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <a asp-controller="CaseCompleteReport"
+                                               asp-action="ExportPdf"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-danger">
+                                                PDF
+                                            </a>
+
+                                            <a asp-controller="CaseCompleteReport"
+                                               asp-action="ExportWord"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-primary">
+                                                Word
+                                            </a>
+
+                                            <a asp-controller="CaseCompleteReport"
+                                               asp-action="ExportExcel"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-success">
+                                                Excel
+                                            </a>
+
+                                            <a asp-controller="PvCaseEntry"
+                                               asp-action="Patient"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-outline-dark">
+                                                Entry
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="13" class="text-center text-muted">
+                                    No case records found for selected filters.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+        </div>
+    </div>
+</div>

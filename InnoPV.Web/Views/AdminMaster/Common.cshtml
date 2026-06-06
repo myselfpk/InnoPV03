@@ -1,0 +1,129 @@
+﻿@using InnoPV.Domain.Enums
+@model List<InnoPV.Web.Models.Admin.CommonMasterOptionViewModel>
+
+@{
+    ViewData["Title"] = "Common Master";
+    var masterType = (CommonMasterType)ViewBag.MasterType;
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>@masterType Master</h3>
+            <p class="text-muted mb-0">
+                Manage options for @masterType.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="AdminMaster"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back
+            </a>
+
+            <a asp-controller="AdminMaster"
+               asp-action="CreateCommon"
+               asp-route-type="@masterType"
+               class="btn btn-primary">
+                + Add Option
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>@masterType Options</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th style="width:100px;">Order</th>
+                        <th style="width:100px;">Status</th>
+                        <th style="width:190px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.Name</td>
+                                <td>@item.Code</td>
+                                <td>@item.Description</td>
+                                <td>@item.DisplayOrder</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-controller="AdminMaster"
+                                       asp-action="EditCommon"
+                                       asp-route-id="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Edit
+                                    </a>
+
+                                    <form asp-controller="AdminMaster"
+                                          asp-action="ToggleCommonStatus"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to change this status?');">
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="id" value="@item.Id" />
+
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            @(item.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

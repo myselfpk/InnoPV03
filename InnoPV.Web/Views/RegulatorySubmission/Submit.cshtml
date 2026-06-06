@@ -1,0 +1,125 @@
+﻿@model InnoPV.Web.Models.RegulatorySubmission.RegulatorySubmissionSubmitViewModel
+
+@{
+    ViewData["Title"] = "Submit Regulatory Submission";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Submit Regulatory Submission</h3>
+            <p class="text-muted mb-0">
+                Submission No: <strong>@Model.SubmissionNo</strong> |
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <a asp-controller="RegulatorySubmission"
+           asp-action="Index"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Submission Confirmation</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="RegulatorySubmission"
+                  asp-action="Submit"
+                  method="post"
+                  enctype="multipart/form-data"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="SubmissionId" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="SubmissionNo" />
+                <input type="hidden" asp-for="CaseNo" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="SubmittedDate" class="form-label">
+                            Submitted Date <span class="text-danger">*</span>
+                        </label>
+
+                        <input asp-for="SubmittedDate"
+                               asp-format="{0:yyyy-MM-dd}"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="SubmittedDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="ReferenceNo" class="form-label">
+                            Reference / Submission No.
+                        </label>
+
+                        <input asp-for="ReferenceNo"
+                               class="form-control"
+                               placeholder="Enter reference number" />
+
+                        <span asp-validation-for="ReferenceNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3 d-flex align-items-center">
+                        <div class="form-check mt-4">
+                            <input asp-for="IsAcknowledgementExpected"
+                                   class="form-check-input" />
+
+                            <label asp-for="IsAcknowledgementExpected"
+                                   class="form-check-label">
+                                Acknowledgement expected
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="SubmissionDocument" class="form-label">
+                            Submitted Document / Proof
+                        </label>
+
+                        <input asp-for="SubmissionDocument"
+                               type="file"
+                               class="form-control"
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Remarks" class="form-label">Remarks</label>
+
+                        <textarea asp-for="Remarks"
+                                  class="form-control"
+                                  rows="4"></textarea>
+
+                        <span asp-validation-for="Remarks" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-success"
+                        onclick="return confirm('Are you sure this submission has been completed?');">
+                    Mark as Submitted
+                </button>
+
+                <a asp-controller="RegulatorySubmission"
+                   asp-action="Index"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

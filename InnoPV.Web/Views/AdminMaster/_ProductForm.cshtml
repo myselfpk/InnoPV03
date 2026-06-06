@@ -1,0 +1,122 @@
+﻿@model InnoPV.Web.Models.Admin.ProductMasterViewModel
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="ProductName" class="form-label">
+            Product Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="ProductName"
+               class="form-control"
+               placeholder="Enter product name" />
+
+        <span asp-validation-for="ProductName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="GenericName" class="form-label">
+            Generic Name
+        </label>
+
+        <input asp-for="GenericName"
+               class="form-control"
+               placeholder="Enter generic name" />
+
+        <span asp-validation-for="GenericName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ProductCode" class="form-label">
+            Product Code
+        </label>
+
+        <input asp-for="ProductCode"
+               class="form-control"
+               placeholder="Enter product code" />
+
+        <span asp-validation-for="ProductCode" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ProductType" class="form-label">
+            Product Type
+        </label>
+
+        <input asp-for="ProductType"
+               class="form-control"
+               placeholder="Drug / Vaccine / Nutraceutical" />
+
+        <span asp-validation-for="ProductType" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="Strength" class="form-label">
+            Strength
+        </label>
+
+        <input asp-for="Strength"
+               class="form-control"
+               placeholder="e.g. 500 mg" />
+
+        <span asp-validation-for="Strength" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="DosageForm" class="form-label">
+            Dosage Form
+        </label>
+
+        <input asp-for="DosageForm"
+               class="form-control"
+               placeholder="Tablet / Capsule / Injection" />
+
+        <span asp-validation-for="DosageForm" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ManufacturerName" class="form-label">
+            Manufacturer Name
+        </label>
+
+        <input asp-for="ManufacturerName"
+               class="form-control"
+               placeholder="Enter manufacturer name" />
+
+        <span asp-validation-for="ManufacturerName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="MarketingAuthorizationHolder" class="form-label">
+            MAH
+        </label>
+
+        <input asp-for="MarketingAuthorizationHolder"
+               class="form-control"
+               placeholder="Marketing Authorization Holder" />
+
+        <span asp-validation-for="MarketingAuthorizationHolder" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Remarks" class="form-label">
+            Remarks
+        </label>
+
+        <textarea asp-for="Remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter remarks, if any"></textarea>
+
+        <span asp-validation-for="Remarks" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>

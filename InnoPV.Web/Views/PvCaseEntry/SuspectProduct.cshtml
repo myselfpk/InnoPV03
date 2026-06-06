@@ -1,0 +1,190 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseSuspectProductDetailViewModel
+
+@{
+    ViewData["Title"] = "Suspect Product Details";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "SuspectProduct";
+    ViewBag.IsReadOnly = Model.IsReadOnly;
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Suspect Product Details</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="PvCaseEntry"
+                  asp-action="SuspectProduct"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                @if (Model.IsReadOnly)
+                {
+                    <div class="alert alert-warning">
+                        This case is read-only. Suspect product fields are disabled.
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <fieldset disabled="@Model.IsReadOnly">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ProductName" class="form-label">
+                            Product Name <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="ProductName" asp-items="Model.ProductOptions" class="form-select">
+                            <option value="">-- Select Product --</option>
+                        </select>
+                        <span asp-validation-for="ProductName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="GenericName" class="form-label">Generic Name</label>
+                        <input asp-for="GenericName" class="form-control" />
+                        <span asp-validation-for="GenericName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="BatchNo" class="form-label">Batch No.</label>
+                        <input asp-for="BatchNo" class="form-control" />
+                        <span asp-validation-for="BatchNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="ExpiryDate" class="form-label">Expiry Date</label>
+                        <input asp-for="ExpiryDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                        <span asp-validation-for="ExpiryDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Indication" class="form-label">Indication</label>
+                        <input asp-for="Indication" class="form-control" />
+                        <span asp-validation-for="Indication" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Dose" class="form-label">Dose</label>
+                        <input asp-for="Dose" class="form-control" />
+                        <span asp-validation-for="Dose" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="DoseUnit" class="form-label">Dose Unit</label>
+                        <input asp-for="DoseUnit" class="form-control" placeholder="mg / ml / tablet" />
+                        <span asp-validation-for="DoseUnit" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Route" class="form-label">Route</label>
+                        <select asp-for="Route" asp-items="Model.RouteOptions" class="form-select">
+                            <option value="">-- Select Route --</option>
+                        </select>
+                        <span asp-validation-for="Route" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Frequency" class="form-label">Frequency</label>
+                        <select asp-for="Frequency" asp-items="Model.FrequencyOptions" class="form-select">
+                            <option value="">-- Select Frequency --</option>
+                        </select>
+                        <span asp-validation-for="Frequency" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="TherapyStartDate" class="form-label">Therapy Start Date</label>
+                        <input asp-for="TherapyStartDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                        <span asp-validation-for="TherapyStartDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="TherapyStopDate" class="form-label">Therapy Stop Date</label>
+                        <input asp-for="TherapyStopDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                        <span asp-validation-for="TherapyStopDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="ActionTaken" class="form-label">Action Taken</label>
+                        <select asp-for="ActionTaken" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Drug withdrawn</option>
+                            <option>Dose reduced</option>
+                            <option>Dose increased</option>
+                            <option>Dose not changed</option>
+                            <option>Not applicable</option>
+                            <option>Unknown</option>
+                        </select>
+                        <span asp-validation-for="ActionTaken" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Causality" class="form-label">Causality</label>
+                        <select asp-for="Causality" asp-items="Model.CausalityOptions" class="form-select">
+                            <option value="">-- Select Causality --</option>
+                        </select>
+                        <span asp-validation-for="Causality" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Dechallenge" class="form-label">Dechallenge</label>
+                        <select asp-for="Dechallenge" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Positive</option>
+                            <option>Negative</option>
+                            <option>Not applicable</option>
+                            <option>Unknown</option>
+                        </select>
+                        <span asp-validation-for="Dechallenge" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Rechallenge" class="form-label">Rechallenge</label>
+                        <select asp-for="Rechallenge" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Positive</option>
+                            <option>Negative</option>
+                            <option>Not applicable</option>
+                            <option>Unknown</option>
+                        </select>
+                        <span asp-validation-for="Rechallenge" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="ProductRemarks" class="form-label">Product Remarks</label>
+                        <textarea asp-for="ProductRemarks" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="ProductRemarks" class="text-danger small"></span>
+                    </div>
+                </div>
+                </fieldset>
+
+                @if (!Model.IsReadOnly)
+                {
+                    <button type="submit" class="btn btn-primary">Save Suspect Product Details</button>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

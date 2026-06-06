@@ -1,0 +1,382 @@
+﻿@model InnoPV.Web.Models.Reports.CaseReportViewModel
+
+@{
+    ViewData["Title"] = "PV Case Report";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>PV Case Report</h3>
+            <p class="text-muted mb-0">
+                Filter and export PV case report.
+            </p>
+        </div>
+
+        <a asp-controller="CaseInbox"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Inbox
+        </a>
+    </div>
+
+    <partial name="_TempDataAlerts" />
+
+    <form method="get" autocomplete="off">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Report Filters</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Case No</label>
+                        <input name="CaseNo"
+                               value="@Model.Filters.CaseNo"
+                               class="form-control"
+                               placeholder="Enter case no" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Receipt Date From</label>
+                        <input name="ReceiptDateFrom"
+                               value="@(Model.Filters.ReceiptDateFrom.HasValue ? Model.Filters.ReceiptDateFrom.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Receipt Date To</label>
+                        <input name="ReceiptDateTo"
+                               value="@(Model.Filters.ReceiptDateTo.HasValue ? Model.Filters.ReceiptDateTo.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="Status" class="form-select">
+                            <option value="">-- All Status --</option>
+
+                            @foreach (var status in Model.Filters.StatusOptions)
+                            {
+                                if (Model.Filters.Status.HasValue && status.Value == Model.Filters.Status.Value.ToString())
+                                {
+                                    <option value="@status.Value" selected>@status.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@status.Value">@status.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Assigned Role</label>
+                        <select name="AssignedRole" class="form-select">
+                            <option value="">-- All Roles --</option>
+
+                            @foreach (var role in Model.Filters.RoleOptions)
+                            {
+                                if (role.Value == Model.Filters.AssignedRole)
+                                {
+                                    <option value="@role.Value" selected>@role.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@role.Value">@role.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Product</label>
+                        <select name="ProductName" class="form-select">
+                            <option value="">-- All Products --</option>
+
+                            @foreach (var product in Model.Filters.ProductOptions)
+                            {
+                                if (product.Value == Model.Filters.ProductName)
+                                {
+                                    <option value="@product.Value" selected>@product.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@product.Value">@product.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Seriousness</label>
+                        <select name="IsSerious" class="form-select">
+                            <option value="">-- All --</option>
+
+                            @if (Model.Filters.IsSerious == true)
+                            {
+                                <option value="true" selected>Serious</option>
+                                <option value="false">Non-serious</option>
+                            }
+                            else if (Model.Filters.IsSerious == false)
+                            {
+                                <option value="true">Serious</option>
+                                <option value="false" selected>Non-serious</option>
+                            }
+                            else
+                            {
+                                <option value="true">Serious</option>
+                                <option value="false">Non-serious</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Validity</label>
+                        <select name="IsValidCase" class="form-select">
+                            <option value="">-- All --</option>
+
+                            @if (Model.Filters.IsValidCase == true)
+                            {
+                                <option value="true" selected>Valid</option>
+                                <option value="false">Invalid</option>
+                            }
+                            else if (Model.Filters.IsValidCase == false)
+                            {
+                                <option value="true">Valid</option>
+                                <option value="false" selected>Invalid</option>
+                            }
+                            else
+                            {
+                                <option value="true">Valid</option>
+                                <option value="false">Invalid</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        formaction="@Url.Action("Index", "CaseReport")"
+                        formmethod="get"
+                        class="btn btn-primary">
+                    Search
+                </button>
+
+                <button type="submit"
+                        formaction="@Url.Action("ExportCsv", "CaseReport")"
+                        formmethod="get"
+                        class="btn btn-success">
+                    Export CSV
+                </button>
+
+                <a asp-controller="CaseReport"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total</h6>
+                    <h3>@Model.TotalCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Valid</h6>
+                    <h3>@Model.ValidCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Invalid</h6>
+                    <h3>@Model.InvalidCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Serious</h6>
+                    <h3>@Model.SeriousCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Closed</h6>
+                    <h3>@Model.ClosedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue</h6>
+                    <h3>@Model.OverdueCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Report Result</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Source</th>
+                        <th>Receipt Date</th>
+                        <th>Reporter</th>
+                        <th>Patient</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Validity</th>
+                        <th>Seriousness</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Assigned Role</th>
+                        <th>Assigned User</th>
+                        <th>Created On</th>
+                        <th style="width:170px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Cases.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.Cases)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td>
+                                    <strong>@item.CaseNo</strong>
+                                </td>
+
+                                <td>@item.CaseSource</td>
+
+                                <td>@item.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.InitialReporterName</td>
+
+                                <td>@item.InitialPatientIdentifier</td>
+
+                                <td>@item.InitialProductName</td>
+
+                                <td>@item.InitialEventTerm</td>
+
+                                <td>
+                                    @if (item.IsValidCase)
+                                    {
+                                        <span class="badge bg-success">Valid</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Invalid</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.IsSerious)
+                                    {
+                                        <span class="badge bg-danger">Serious</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Non-serious</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.DueDate.HasValue)
+                                    {
+                                        if (item.IsOverdue)
+                                        {
+                                            <span class="badge bg-danger">
+                                                @item.DueDate.Value.ToString("dd-MMM-yyyy")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            @item.DueDate.Value.ToString("dd-MMM-yyyy")
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        @item.Status
+                                    </span>
+                                </td>
+
+                                <td>@item.CurrentAssignedRole</td>
+
+                                <td>@item.CurrentAssignedUserName</td>
+
+                                <td>@item.CreatedOnUtc.ToString("dd-MMM-yyyy HH:mm")</td>
+
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <a asp-controller="PvCase"
+                                           asp-action="Details"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+
+                                        <a asp-controller="CaseHistory"
+                                           asp-action="Index"
+                                           asp-route-caseId="@item.Id"
+                                           class="btn btn-sm btn-outline-dark">
+                                            History
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="16" class="text-center text-muted">
+                                No case records found for selected filters.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

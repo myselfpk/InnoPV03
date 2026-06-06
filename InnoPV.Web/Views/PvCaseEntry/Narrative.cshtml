@@ -1,0 +1,292 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseNarrativeViewModel
+
+@{
+    ViewData["Title"] = "Case Narrative";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "Narrative";
+    ViewBag.IsReadOnly = Model.IsReadOnly;
+}
+
+<div class="container-fluid mt-3">
+    <partial name="_CaseEntryTabs" />
+
+    <partial name="_TempDataAlerts" />
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <div>
+                <strong>Case Narrative</strong>
+                <div class="text-muted small">
+                    Case No: @Model.CaseNo
+                </div>
+            </div>
+
+            @if (Model.IsReadOnly)
+            {
+                <span class="badge bg-danger">
+                    Read-only
+                </span>
+            }
+        </div>
+
+        <div class="card-body">
+            @if (Model.IsReadOnly)
+            {
+                <div class="alert alert-warning">
+                    This case is read-only. Narrative cannot be modified.
+                </div>
+            }
+
+            <form asp-controller="PvCaseEntry"
+                  asp-action="Narrative"
+                  method="post"
+                  autocomplete="off"
+                  id="narrativeForm">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                <input type="hidden" asp-for="IsReadOnly" />
+
+
+                <textarea asp-for="CaseNarrativeHtml"
+                          id="CaseNarrativeHtml"
+                          class="d-none"></textarea>
+
+                <div class="editor-wrapper border rounded">
+                    <div class="editor-toolbar border-bottom bg-light p-2">
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('bold')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            <strong>B</strong>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('italic')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            <em>I</em>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('underline')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            <u>U</u>
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('insertUnorderedList')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Bullet List
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('insertOrderedList')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Number List
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('justifyLeft')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Left
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('justifyCenter')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Center
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('justifyRight')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Right
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                onclick="execEditorCommand('removeFormat')"
+                            @(Model.IsReadOnly ? "disabled" : "")>
+                            Clear Format
+                        </button>
+                    </div>
+
+                    @if (Model.IsReadOnly)
+                    {
+                        <div id="narrativeEditor"
+                             class="editor-area p-3"
+                             contenteditable="false">
+                            @Html.Raw(Model.CaseNarrativeHtml ?? "")
+                        </div>
+                    }
+                    else
+                    {
+                        <div id="narrativeEditor"
+                             class="editor-area p-3"
+                             contenteditable="true">
+                            @Html.Raw(Model.CaseNarrativeHtml ?? "")
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-3 d-flex justify-content-between">
+                    <div>
+                        @if (!Model.IsReadOnly)
+                        {
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Save Narrative
+                            </button>
+                        }
+
+                    </div>
+
+                    <a asp-controller="CaseInbox"
+                       asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        Back to Inbox
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .editor-wrapper {
+        background-color: #ffffff;
+    }
+
+    .editor-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .editor-area {
+        min-height: 520px;
+        width: 100%;
+        outline: none;
+        line-height: 1.6;
+        font-size: 15px;
+        background-color: #ffffff;
+        cursor: text;
+        white-space: normal;
+    }
+
+        .editor-area:focus {
+            border: none;
+            outline: 2px solid #cfe2ff;
+            outline-offset: -2px;
+        }
+
+        .editor-area[contenteditable="false"] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .editor-area p {
+            margin-bottom: 0.75rem;
+        }
+
+        .editor-area ul,
+        .editor-area ol {
+            padding-left: 1.5rem;
+        }
+
+    .editor-area {
+        min-height: 520px;
+        width: 100%;
+        outline: none;
+        line-height: 1.6;
+        font-size: 15px;
+        background-color: #ffffff;
+        cursor: text;
+        white-space: normal;
+    }
+
+        .editor-area:empty:before {
+            content: "Type case narrative here...";
+            color: #999;
+        }
+
+        .editor-area[contenteditable="false"] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .editor-area[contenteditable="true"] {
+            cursor: text;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        function execEditorCommand(command) {
+            const editor = document.getElementById('narrativeEditor');
+
+            if (!editor || editor.getAttribute('contenteditable') !== 'true') {
+                return;
+            }
+
+            editor.focus();
+            document.execCommand(command, false, null);
+            syncNarrative();
+        }
+
+        function syncNarrative() {
+            const editor = document.getElementById('narrativeEditor');
+            const hiddenField = document.getElementById('CaseNarrativeHtml');
+
+            if (!editor || !hiddenField) {
+                return;
+            }
+
+            hiddenField.value = editor.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('narrativeForm');
+            const editor = document.getElementById('narrativeEditor');
+
+            if (!form || !editor) {
+                return;
+            }
+
+            if (editor.getAttribute('contenteditable') === 'true') {
+                editor.addEventListener('input', syncNarrative);
+                editor.addEventListener('keyup', syncNarrative);
+                editor.addEventListener('paste', function () {
+                    setTimeout(syncNarrative, 100);
+                });
+                editor.addEventListener('blur', syncNarrative);
+            }
+
+            form.addEventListener('submit', function () {
+                syncNarrative();
+            });
+        });
+    </script>
+    <script>
+        function syncNarrative() {
+    const editor = document.getElementById('narrativeEditor');
+    const hiddenField = document.getElementById('CaseNarrativeHtml');
+
+    if (!editor || !hiddenField) {
+        return;
+    }
+
+    hiddenField.value = editor.innerHTML;
+}
+    </script>
+}

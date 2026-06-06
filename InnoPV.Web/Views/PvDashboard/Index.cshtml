@@ -1,0 +1,339 @@
+﻿@model InnoPV.Web.Models.Dashboard.PvDashboardViewModel
+
+@{
+    ViewData["Title"] = "PV Dashboard";
+
+    var statusLabels = System.Text.Json.JsonSerializer.Serialize(Model.StatusChart.Select(x => x.Label));
+    var statusData = System.Text.Json.JsonSerializer.Serialize(Model.StatusChart.Select(x => x.Count));
+
+    var roleLabels = System.Text.Json.JsonSerializer.Serialize(Model.RoleChart.Select(x => x.Label));
+    var roleData = System.Text.Json.JsonSerializer.Serialize(Model.RoleChart.Select(x => x.Count));
+
+    var monthlyLabels = System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrendChart.Select(x => x.Label));
+    var monthlyData = System.Text.Json.JsonSerializer.Serialize(Model.MonthlyTrendChart.Select(x => x.Count));
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>PV Dashboard</h3>
+            <p class="text-muted mb-0">
+                Case summary, SLA/TAT monitoring and workflow distribution.
+            </p>
+        </div>
+
+        <a asp-controller="CaseReport"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Open Reports
+        </a>
+
+        <a asp-controller="CaseInbox"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            My Inbox
+        </a>
+
+        <a asp-controller="CaseReport"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Case Report
+        </a>
+
+        <a asp-controller="RegulatorySubmissionReport"
+           asp-action="Index"
+           class="btn btn-outline-success">
+            Submission Report
+        </a>
+
+        <a asp-controller="SlaAlert"
+           asp-action="Index"
+           class="btn btn-outline-warning">
+            SLA Alerts
+        </a>
+
+    </div>
+
+    <div class="row g-3 mb-3">
+        @foreach (var card in Model.Cards)
+        {
+            <div class="col-md-2">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-muted">@card.Title</h6>
+                        <h3>@card.Count</h3>
+                        <small class="text-muted">@card.Description</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue Cases</h6>
+                    <h3 class="text-danger">@Model.OverdueCount</h3>
+                    <small class="text-muted">Due date crossed</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">Due Within 7 Days</h6>
+                    <h3 class="text-warning">@Model.DueWithin7DaysCount</h3>
+                    <small class="text-muted">Upcoming SLA/TAT cases</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Serious Open Cases</h6>
+                    <h3 class="text-danger">@Model.SeriousOpenCount</h3>
+                    <small class="text-muted">Requires expedited attention</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body">
+                    <h6 class="text-muted">Non-serious Open Cases</h6>
+                    <h3>@Model.NonSeriousOpenCount</h3>
+                    <small class="text-muted">Routine monitoring</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Cases by Status</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Cases by Assigned Role</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="roleChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <strong>Monthly Case Trend</strong>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyTrendChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <strong>Overdue Cases</strong>
+                </div>
+
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Case No</th>
+                                <th>Product</th>
+                                <th>Event</th>
+                                <th>Due Date</th>
+                                <th>Days</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.OverdueCases.Any())
+                            {
+                                foreach (var item in Model.OverdueCases)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@item.CaseNo</strong>
+                                        </td>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.EventTerm</td>
+                                        <td>
+                                            @(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger">
+                                                @Math.Abs(item.DaysRemaining) days overdue
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="PvCaseEntry"
+                                               asp-action="Patient"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Open
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No overdue cases found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <strong>Cases Due Within 7 Days</strong>
+                </div>
+
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Case No</th>
+                                <th>Product</th>
+                                <th>Event</th>
+                                <th>Due Date</th>
+                                <th>Remaining</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.DueSoonCases.Any())
+                            {
+                                foreach (var item in Model.DueSoonCases)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@item.CaseNo</strong>
+                                        </td>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.EventTerm</td>
+                                        <td>
+                                            @(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">
+                                                @item.DaysRemaining days
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="PvCaseEntry"
+                                               asp-action="Patient"
+                                               asp-route-caseId="@item.Id"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Open
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        No cases due within 7 days.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const statusLabels = @Html.Raw(statusLabels);
+        const statusData = @Html.Raw(statusData);
+
+        const roleLabels = @Html.Raw(roleLabels);
+        const roleData = @Html.Raw(roleData);
+
+        const monthlyLabels = @Html.Raw(monthlyLabels);
+        const monthlyData = @Html.Raw(monthlyData);
+
+        new Chart(document.getElementById('statusChart'), {
+        type: 'bar',
+        data: {
+        labels: statusLabels,
+        datasets: [{
+        label: 'Cases',
+        data: statusData
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+        legend: {
+        display: false
+        }
+        }
+        }
+        });
+
+        new Chart(document.getElementById('roleChart'), {
+        type: 'doughnut',
+        data: {
+        labels: roleLabels,
+        datasets: [{
+        label: 'Cases',
+        data: roleData
+        }]
+        },
+        options: {
+        responsive: true
+        }
+        });
+
+        new Chart(document.getElementById('monthlyTrendChart'), {
+        type: 'line',
+        data: {
+        labels: monthlyLabels,
+        datasets: [{
+        label: 'Cases',
+        data: monthlyData,
+        tension: 0.3
+        }]
+        },
+        options: {
+        responsive: true
+        }
+        });
+    </script>
+}

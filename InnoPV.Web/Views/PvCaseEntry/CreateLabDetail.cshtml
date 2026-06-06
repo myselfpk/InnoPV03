@@ -1,0 +1,53 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseLabDetailViewModel
+
+@{
+    ViewData["Title"] = "Create Lab Detail";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "LabDetails";
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Create Lab Detail</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="PvCaseEntry"
+                  asp-action="CreateLabDetail"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                @await Html.PartialAsync("_LabDetailForm", Model)
+
+                @if (!Model.IsReadOnly)
+                {
+                    <button type="submit" class="btn btn-primary">
+                        Save Lab Detail
+                    </button>
+                }
+
+                <a asp-controller="PvCaseEntry"
+                   asp-action="LabDetails"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

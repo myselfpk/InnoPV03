@@ -1,0 +1,78 @@
+﻿@model InnoPV.Web.Models.Admin.ChecklistMasterViewModel
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="ChecklistName" class="form-label">
+            Checklist Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="ChecklistName"
+               class="form-control"
+               placeholder="Enter checklist name" />
+
+        <span asp-validation-for="ChecklistName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="ApplicableRole" class="form-label">
+            Applicable Role <span class="text-danger">*</span>
+        </label>
+
+        <select asp-for="ApplicableRole"
+                asp-items="Model.RoleOptions"
+                class="form-select">
+            <option value="">-- Select Role --</option>
+        </select>
+
+        <span asp-validation-for="ApplicableRole" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="ApplicableStage" class="form-label">
+            Applicable Stage <span class="text-danger">*</span>
+        </label>
+
+        <select asp-for="ApplicableStage"
+                asp-items="Model.StageOptions"
+                class="form-select">
+            <option value="">-- Select Stage --</option>
+        </select>
+
+        <span asp-validation-for="ApplicableStage" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="VersionNo" class="form-label">
+            Version No. <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="VersionNo"
+               class="form-control"
+               placeholder="e.g. 1.0" />
+
+        <span asp-validation-for="VersionNo" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="EffectiveFrom" class="form-label">
+            Effective From
+        </label>
+
+        <input asp-for="EffectiveFrom"
+               asp-format="{0:yyyy-MM-dd}"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="EffectiveFrom" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>

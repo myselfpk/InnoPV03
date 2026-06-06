@@ -1,0 +1,48 @@
+﻿@model InnoPV.Web.Models.Admin.ChecklistItemViewModel
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <label asp-for="ItemText" class="form-label">
+            Checklist Item <span class="text-danger">*</span>
+        </label>
+
+        <textarea asp-for="ItemText"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter checklist item text"></textarea>
+
+        <span asp-validation-for="ItemText" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="DisplayOrder" class="form-label">
+            Display Order
+        </label>
+
+        <input asp-for="DisplayOrder"
+               type="number"
+               class="form-control" />
+
+        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3 d-flex align-items-center">
+        <div class="form-check mt-4">
+            <input asp-for="IsMandatory" class="form-check-input" />
+
+            <label asp-for="IsMandatory" class="form-check-label">
+                Mandatory
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-3 d-flex align-items-center">
+        <div class="form-check mt-4">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>

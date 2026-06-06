@@ -1,0 +1,308 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using InnoPV.Domain.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - InnoPV.Web</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/InnoPV.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a class="navbar-brand"
+                       asp-area=""
+                       asp-controller="Dashboard"
+                       asp-action="Index">
+                        InnoPV.Web
+                    </a>
+                }
+                else
+                {
+                    <a class="navbar-brand"
+                       asp-area=""
+                       asp-controller="Home"
+                       asp-action="Index">
+                        InnoPV.Web
+                    </a>
+                }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-controller="CaseInbox"
+                                   asp-action="Index">
+                                    My Inbox
+                                </a>
+                            </li>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("PV Manager") || User.IsInRole("PV Associate") || User.IsInRole("Medical Reviewer"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark"
+                                       href="#"
+                                       id="dashboardDropdown"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        Dashboard
+                                    </a>
+
+                                    <ul class="dropdown-menu" aria-labelledby="dashboardDropdown">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="PvDashboard"
+                                               asp-action="Index">
+                                                PV Dashboard
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="SlaAlert"
+                                               asp-action="Index">
+                                                SLA Alerts
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark"
+                                   href="#"
+                                   id="caseDropdown"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    Case Management
+                                </a>
+
+                                <ul class="dropdown-menu" aria-labelledby="caseDropdown">
+                                    @if (User.IsInRole("Admin") || User.IsInRole("PV Associate"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="PvCase"
+                                               asp-action="Index">
+                                                PV Cases
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="PvCase"
+                                               asp-action="Create">
+                                                Create New Case
+                                            </a>
+                                        </li>
+                                    }
+
+                                    @if (User.IsInRole("Admin") || User.IsInRole("PV Manager"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="CaseAssignment"
+                                               asp-action="Index">
+                                                Case Assignment
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("PV Manager"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark"
+                                       href="#"
+                                       id="reportDropdown"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        Reports
+                                    </a>
+
+                                    <ul class="dropdown-menu" aria-labelledby="reportDropdown">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="CaseReport"
+                                               asp-action="Index">
+                                                Case Report
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="CaseCompleteReport"
+                                               asp-action="Index">
+                                                Complete Case Report
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="RegulatorySubmissionReport"
+                                               asp-action="Index">
+                                                Submission Report
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-dark"
+                                       href="#"
+                                       id="adminDropdown"
+                                       role="button"
+                                       data-bs-toggle="dropdown"
+                                       aria-expanded="false">
+                                        Admin
+                                    </a>
+
+                                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="UserManagement"
+                                               asp-action="Index">
+                                                User Management
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="AdminMaster"
+                                               asp-action="Index">
+                                                Master Data
+                                            </a>
+                                        </li>
+
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="AdminChecklist"
+                                               asp-action="Index">
+                                                Checklist Master
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+                    </ul>
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        var currentUser = await UserManager.GetUserAsync(User);
+                        var fullName = currentUser?.FullName ?? User.Identity.Name;
+                        var designation = currentUser?.Designation;
+
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark"
+                                   href="#"
+                                   id="userProfileDropdown"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+
+                                    <span>@fullName</span>
+
+                                    @if (!string.IsNullOrWhiteSpace(designation))
+                                    {
+                                        <small class="text-muted">
+                                            (@designation)
+                                        </small>
+                                    }
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    aria-labelledby="userProfileDropdown">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Profile"
+                                           asp-action="Index">
+                                            My Profile
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-controller="Profile"
+                                           asp-action="ChangePassword">
+                                            Change Password
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <form asp-controller="Account"
+                                              asp-action="Logout"
+                                              method="post"
+                                              class="px-3">
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-link text-danger p-0">
+                                                Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+                                    Login
+                                </a>
+                            </li>
+                        </ul>
+                    }
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - InnoPV.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

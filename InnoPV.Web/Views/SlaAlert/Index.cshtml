@@ -1,0 +1,323 @@
+﻿@model InnoPV.Web.Models.SlaAlerts.SlaAlertPreviewViewModel
+
+@{
+    ViewData["Title"] = "SLA/TAT Alerts";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>SLA/TAT Alerts</h3>
+            <p class="text-muted mb-0">
+                Escalation matrix monitoring for T-7, T-3, T-1 and overdue cases.
+            </p>
+        </div>
+
+        <a asp-controller="PvDashboard"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">T-7 Cases</h6>
+                    <h3 class="text-warning">@Model.T7Count</h3>
+                    <small class="text-muted">Due in @Model.T7Days day(s)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">T-3 Cases</h6>
+                    <h3 class="text-warning">@Model.T3Count</h3>
+                    <small class="text-muted">Due in @Model.T3Days day(s)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <h6 class="text-muted">T-1 Cases</h6>
+                    <h3 class="text-warning">@Model.T1Count</h3>
+                    <small class="text-muted">Due in @Model.T1Days day(s)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue Cases</h6>
+                    <h3 class="text-danger">@Model.OverdueCount</h3>
+                    <small class="text-muted">Due date already crossed</small>
+                </div>
+            </div>
+        </div>
+
+        @{
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var generatedOnIst = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(Model.GeneratedOnUtc, DateTimeKind.Utc),
+                indiaTimeZone
+            );
+        }
+
+        <div class="col-md-12">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body">
+                    <h6 class="text-muted">Generated On IST</h6>
+                    <h5>@generatedOnIst.ToString("dd-MMM-yyyy HH:mm")</h5>
+                    <small class="text-muted">Current Timestamp</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Manual Alert Actions</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="SlaAlert"
+                  asp-action="SendDueSoonAlerts"
+                  method="post"
+                  class="d-inline"
+                  onsubmit="return confirm('Are you sure you want to send due soon alerts?');">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-warning">
+                    Send Due Soon Alerts
+                </button>
+            </form>
+
+            <form asp-controller="SlaAlert"
+                  asp-action="SendOverdueAlerts"
+                  method="post"
+                  class="d-inline"
+                  onsubmit="return confirm('Are you sure you want to send overdue alerts?');">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-danger">
+                    Send Overdue Alerts
+                </button>
+            </form>
+
+            <form asp-controller="SlaAlert"
+                  asp-action="SendAllAlerts"
+                  method="post"
+                  class="d-inline"
+                  onsubmit="return confirm('Are you sure you want to send all SLA alerts?');">
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-primary">
+                    Send All Alerts
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-warning">
+            <strong>Escalation Matrix Cases (T-7, T-3, T-1)</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Seriousness</th>
+                        <th>Due Date</th>
+                        <th>Days Remaining</th>
+                        <th>Escalation</th>
+                        <th>Status</th>
+                        <th>Assigned Role</th>
+                        <th>Assigned User</th>
+                        <th style="width:120px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.DueSoonCases.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.DueSoonCases)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td><strong>@item.CaseNo</strong></td>
+                                <td>@item.ProductName</td>
+                                <td>@item.EventTerm</td>
+                                <td>
+                                    @if (item.IsSerious)
+                                    {
+                                        <span class="badge bg-danger">Serious</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Non-serious</span>
+                                    }
+                                </td>
+                                <td>@(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")</td>
+                                <td>
+                                    <span class="badge bg-warning text-dark">
+                                        @item.DaysRemaining day(s)
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (item.EscalationLevel == "T-1")
+                                    {
+                                        <span class="badge bg-danger">@item.EscalationLevel</span>
+                                    }
+                                    else if (item.EscalationLevel == "T-3")
+                                    {
+                                        <span class="badge bg-warning text-dark">@item.EscalationLevel</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.EscalationLevel</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark">@item.Status</span>
+                                </td>
+                                <td>@item.CurrentAssignedRole</td>
+                                <td>@item.CurrentAssignedUserName</td>
+                                <td>
+                                    <a asp-controller="PvCaseEntry"
+                                       asp-action="Patient"
+                                       asp-route-caseId="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">
+                                No escalation matrix cases found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <strong>Overdue Cases</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Seriousness</th>
+                        <th>Due Date</th>
+                        <th>Overdue By</th>
+                        <th>Escalation</th>
+                        <th>Status</th>
+                        <th>Assigned Role</th>
+                        <th>Assigned User</th>
+                        <th style="width:120px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.OverdueCases.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.OverdueCases)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td><strong>@item.CaseNo</strong></td>
+                                <td>@item.ProductName</td>
+                                <td>@item.EventTerm</td>
+                                <td>
+                                    @if (item.IsSerious)
+                                    {
+                                        <span class="badge bg-danger">Serious</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Non-serious</span>
+                                    }
+                                </td>
+                                <td>@(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")</td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        @Math.Abs(item.DaysRemaining) day(s)
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger">@item.EscalationLevel</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info text-dark">@item.Status</span>
+                                </td>
+                                <td>@item.CurrentAssignedRole</td>
+                                <td>@item.CurrentAssignedUserName</td>
+                                <td>
+                                    <a asp-controller="PvCaseEntry"
+                                       asp-action="Patient"
+                                       asp-route-caseId="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Open
+                                    </a>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">
+                                No overdue cases found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

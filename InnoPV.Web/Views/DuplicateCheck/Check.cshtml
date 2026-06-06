@@ -1,0 +1,243 @@
+﻿@model InnoPV.Web.Models.DuplicateCheck.DuplicateCheckViewModel
+
+@{
+    ViewData["Title"] = "Duplicate Check";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Duplicate Check</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="PvCaseEntry"
+               asp-action="Patient"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-success">
+                Case Entry
+            </a>
+
+            <a asp-controller="CaseInbox"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back to Inbox
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Current Case</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Patient:</strong>
+                    <div>@Model.PatientIdentifier</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Reporter:</strong>
+                    <div>@Model.ReporterName</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Receipt Date:</strong>
+                    <div>@Model.ReceiptDate.ToString("dd-MMM-yyyy")</div>
+                </div>
+
+                <div class="col-md-3 mt-3">
+                    <strong>Product:</strong>
+                    <div>@Model.ProductName</div>
+                </div>
+
+                <div class="col-md-3 mt-3">
+                    <strong>Event:</strong>
+                    <div>@Model.EventTerm</div>
+                </div>
+
+                <div class="col-md-3 mt-3">
+                    <strong>Status:</strong>
+                    <div>
+                        <span class="badge bg-info text-dark">@Model.Status</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-warning">
+            <strong>Potential Duplicate Cases</strong>
+        </div>
+
+        <div class="card-body border-bottom bg-light">
+            <small class="text-muted">
+                Candidates are listed when matching confidence score is >= @Model.DuplicateConfidenceThreshold%.
+            </small>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Patient</th>
+                        <th>Reporter</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Receipt Date</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Confidence</th>
+                        <th>Match Reasons</th>
+                        <th style="width:220px;">Decision</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Candidates.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.Candidates)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>
+                                    <strong>@item.CaseNo</strong>
+                                </td>
+                                <td>@item.PatientIdentifier</td>
+                                <td>@item.ReporterName</td>
+                                <td>@item.ProductName</td>
+                                <td>@item.EventTerm</td>
+                                <td>@item.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+                                <td>
+                                    <span class="badge bg-info text-dark">@item.Status</span>
+                                </td>
+                                <td>
+                                    @if (item.MatchingScore >= 80)
+                                    {
+                                        <span class="badge bg-danger">@item.MatchingScore%</span>
+                                    }
+                                    else if (item.MatchingScore >= 50)
+                                    {
+                                        <span class="badge bg-warning text-dark">@item.MatchingScore%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.MatchingScore%</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ConfidenceBand == "High")
+                                    {
+                                        <span class="badge bg-danger">@item.ConfidenceBand</span>
+                                    }
+                                    else if (item.ConfidenceBand == "Medium")
+                                    {
+                                        <span class="badge bg-warning text-dark">@item.ConfidenceBand</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.ConfidenceBand</span>
+                                    }
+                                </td>
+                                <td>@item.MatchReasons</td>
+                                <td>
+                                    <form asp-controller="DuplicateCheck"
+                                          asp-action="MarkAsDuplicate"
+                                          method="post"
+                                          onsubmit="return confirm('Are you sure you want to mark this case as duplicate?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="PvCaseId" value="@Model.PvCaseId" />
+                                        <input type="hidden" name="DuplicateOfPvCaseId" value="@item.Id" />
+                                        <textarea name="Remarks"
+                                                  class="form-control form-control-sm mb-2"
+                                                  rows="2"
+                                                  placeholder="Remarks required"></textarea>
+
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Mark Duplicate
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">
+                                No potential duplicate cases found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>No Duplicate Decision</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="DuplicateCheck"
+                  asp-action="MarkAsNotDuplicate"
+                  method="post"
+                  onsubmit="return confirm('Are you sure you want to complete duplicate check as No Duplicate?');">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="CaseId" value="@Model.PvCaseId" />
+
+                <div class="mb-3">
+                    <label asp-for="NotDuplicateRemarks" class="form-label">
+                        Remarks <span class="text-danger">*</span>
+                    </label>
+                    <textarea asp-for="NotDuplicateRemarks"
+                              name="Remarks"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Enter duplicate check remarks"></textarea>
+                    <span asp-validation-for="NotDuplicateRemarks" class="text-danger small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    Mark as No Duplicate Found
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

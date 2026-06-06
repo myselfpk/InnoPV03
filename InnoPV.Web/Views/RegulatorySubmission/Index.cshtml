@@ -1,0 +1,259 @@
+﻿@model InnoPV.Web.Models.RegulatorySubmission.RegulatorySubmissionIndexViewModel
+
+@{
+    ViewData["Title"] = "Regulatory Submissions";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Regulatory Submissions</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="RegulatorySubmission"
+               asp-action="Validate"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-warning">
+                Validate Submission
+            </a>
+
+            <a asp-controller="RegulatorySubmission"
+               asp-action="Create"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-primary">
+                + Create Submission
+            </a>
+
+            <a asp-controller="CaseInbox"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back to Inbox
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total</h6>
+                    <h3>@Model.TotalSubmissions</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Pending</h6>
+                    <h3>@Model.PendingSubmissions</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Submitted</h6>
+                    <h3>@Model.SubmittedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Acknowledgement Pending</h6>
+                    <h3>@Model.AcknowledgementPendingCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue</h6>
+                    <h3 class="text-danger">@Model.OverdueCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Case Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Status:</strong>
+                    <div><span class="badge bg-info text-dark">@Model.CaseStatus</span></div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Product:</strong>
+                    <div>@Model.ProductName</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Event:</strong>
+                    <div>@Model.EventTerm</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Submission List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Submission No</th>
+                        <th>Type</th>
+                        <th>Authority</th>
+                        <th>Format</th>
+                        <th>Due Date</th>
+                        <th>Submitted Date</th>
+                        <th>Ack Date</th>
+                        <th>Reference No</th>
+                        <th>Status</th>
+                        <th>Document</th>
+                        <th style="width:260px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Submissions.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.Submissions)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td><strong>@item.SubmissionNo</strong></td>
+
+                                <td>@item.SubmissionType</td>
+
+                                <td>@item.RecipientAuthority</td>
+
+                                <td>@item.SubmissionFormat</td>
+
+                                <td>
+                                    @if (item.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger">
+                                            @item.DueDate.ToString("dd-MMM-yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @item.DueDate.ToString("dd-MMM-yyyy")
+                                    }
+                                </td>
+
+                                <td>
+                                    @(item.SubmittedDate.HasValue ? item.SubmittedDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+
+                                <td>
+                                    @(item.AcknowledgementReceivedDate.HasValue ? item.AcknowledgementReceivedDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+
+                                <td>@item.ReferenceNo</td>
+
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        @item.SubmissionStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.OriginalFileName))
+                                    {
+                                        <a asp-controller="RegulatorySubmission"
+                                           asp-action="DownloadDocument"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Download
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No document</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.SubmissionStatus == InnoPV.Domain.Enums.RegulatorySubmissionStatus.SubmissionPending ||
+                                         item.SubmissionStatus == InnoPV.Domain.Enums.RegulatorySubmissionStatus.Draft)
+                                    {
+                                        <a asp-controller="RegulatorySubmission"
+                                           asp-action="Submit"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-success">
+                                            Submit
+                                        </a>
+                                    }
+
+                                    @if (item.SubmissionStatus == InnoPV.Domain.Enums.RegulatorySubmissionStatus.AcknowledgementPending)
+                                    {
+                                        <a asp-controller="RegulatorySubmission"
+                                           asp-action="Acknowledgement"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-warning">
+                                            Ack
+                                        </a>
+                                    }
+
+                                    <a asp-controller="CaseHistory"
+                                       asp-action="Index"
+                                       asp-route-caseId="@item.PvCaseId"
+                                       class="btn btn-sm btn-outline-dark">
+                                        History
+                                    </a>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="12" class="text-center text-muted">
+                                No regulatory submission records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

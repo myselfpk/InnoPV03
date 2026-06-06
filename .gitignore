@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+out/
+
+# User and IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Package managers
+node_modules/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local tool data
+.dotnet/
+
+# Publish output
+publish/
+App_Data/uploads/
+InnoPV.Web/App_Data/uploads/

@@ -1,0 +1,215 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.btn-group.flex-wrap {
+    gap: 4px;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.readonly-field {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.report-card {
+    border-radius: 0.75rem;
+}
+
+.report-action-panel {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+}
+
+.table thead th {
+    white-space: nowrap;
+}
+
+.btn-group.flex-wrap {
+    gap: 4px;
+}
+
+.case-report-title {
+    font-weight: 600;
+    color: #1f4e79;
+}
+
+.complete-report-page {
+    background: #f6f8fb;
+}
+
+.report-hero {
+    background: linear-gradient(135deg, #1f4e79, #0d6efd);
+    color: #ffffff;
+    padding: 22px 24px;
+    border-radius: 14px;
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.18);
+}
+
+    .report-hero h3 {
+        font-weight: 700;
+    }
+
+    .report-hero p {
+        color: #e8f1ff;
+    }
+
+.report-summary-card {
+    background: #ffffff;
+    border-left: 5px solid #0d6efd;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 120px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.summary-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: #212529;
+    line-height: 1;
+}
+
+.summary-footer {
+    font-size: 12px;
+    color: #8a8f95;
+    margin-top: 10px;
+}
+
+.report-filter-card,
+.report-list-card {
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+    .report-filter-card .card-header,
+    .report-list-card .card-header {
+        border-bottom: 1px solid #eef1f5;
+        padding: 14px 18px;
+    }
+
+    .report-filter-card .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+.report-table thead th {
+    background: #f1f5f9;
+    color: #344054;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.report-table tbody td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.report-table tbody tr:hover {
+    background-color: #f8fbff;
+}
+
+.export-legend {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.download-action-box {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+    .download-action-box .btn {
+        min-width: 58px;
+        font-weight: 600;
+    }
+
+.badge {
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .report-hero {
+        padding: 18px;
+    }
+
+    .summary-value {
+        font-size: 24px;
+    }
+
+    .download-action-box .btn {
+        width: 100%;
+    }
+}
+
+.case-entry-export-panel {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-left: 5px solid #0d6efd;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}

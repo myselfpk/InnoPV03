@@ -1,0 +1,55 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseConcomitantMedicationViewModel
+
+@{
+    ViewData["Title"] = "Edit Concomitant Medication";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "ConcomitantMedications";
+    ViewBag.IsReadOnly = Model.IsReadOnly;
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Edit Concomitant Medication</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="PvCaseEntry"
+                  asp-action="EditConcomitantMedication"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                @await Html.PartialAsync("_ConcomitantMedicationForm", Model)
+
+                @if (!Model.IsReadOnly)
+                {
+                    <button type="submit" class="btn btn-primary">
+                        Update Medication
+                    </button>
+                }
+
+                <a asp-controller="PvCaseEntry"
+                   asp-action="ConcomitantMedications"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

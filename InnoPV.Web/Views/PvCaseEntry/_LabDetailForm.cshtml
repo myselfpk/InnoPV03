@@ -1,0 +1,89 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseLabDetailViewModel
+
+<fieldset disabled="@Model.IsReadOnly">
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="TestName" class="form-label">
+            Test Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="TestName"
+               class="form-control"
+               placeholder="e.g. Hemoglobin, SGPT, Creatinine" />
+
+        <span asp-validation-for="TestName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="TestDate" class="form-label">Test Date</label>
+
+        <input asp-for="TestDate"
+               asp-format="{0:yyyy-MM-dd}"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="TestDate" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="TestResult" class="form-label">Test Result</label>
+
+        <input asp-for="TestResult"
+               class="form-control"
+               placeholder="Enter result" />
+
+        <span asp-validation-for="TestResult" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="Unit" class="form-label">Unit</label>
+
+        <input asp-for="Unit"
+               class="form-control"
+               placeholder="mg/dL, g/dL, IU/L" />
+
+        <span asp-validation-for="Unit" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="NormalRange" class="form-label">Normal Range</label>
+
+        <input asp-for="NormalRange"
+               class="form-control"
+               placeholder="e.g. 0.5 - 1.2" />
+
+        <span asp-validation-for="NormalRange" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="ClinicalSignificance" class="form-label">Clinical Significance</label>
+
+        <input asp-for="ClinicalSignificance"
+               class="form-control"
+               placeholder="Normal / Abnormal / Clinically significant" />
+
+        <span asp-validation-for="ClinicalSignificance" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Remarks" class="form-label">Remarks</label>
+
+        <textarea asp-for="Remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter remarks, if any"></textarea>
+
+        <span asp-validation-for="Remarks" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>
+</fieldset>

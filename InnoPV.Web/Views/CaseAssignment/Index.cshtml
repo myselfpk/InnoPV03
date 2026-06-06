@@ -1,0 +1,145 @@
+﻿@model List<InnoPV.Web.Models.CaseAssignment.CaseAssignmentListItemViewModel>
+
+@{
+    ViewData["Title"] = "Case Assignment";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Case Assignment</h3>
+            <p class="text-muted mb-0">
+                Assign PV cases to specific role and user.
+            </p>
+        </div>
+
+        <a asp-controller="CaseInbox"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Inbox
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Assignment List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Source</th>
+                        <th>Receipt Date</th>
+                        <th>Patient</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Seriousness</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Assigned Role</th>
+                        <th>Assigned User</th>
+                        <th style="width:120px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td>
+                                    <strong>@item.CaseNo</strong>
+                                </td>
+
+                                <td>@item.CaseSource</td>
+
+                                <td>@item.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.InitialPatientIdentifier</td>
+
+                                <td>@item.InitialProductName</td>
+
+                                <td>@item.InitialEventTerm</td>
+
+                                <td>
+                                    @if (item.IsSerious)
+                                    {
+                                        <span class="badge bg-danger">Serious</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Non-serious</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @(item.DueDate.HasValue ? item.DueDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        @item.Status
+                                    </span>
+                                </td>
+
+                                <td>@item.CurrentAssignedRole</td>
+
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.CurrentAssignedUserName))
+                                    {
+                                        @item.CurrentAssignedUserName
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not Assigned</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <a asp-controller="CaseAssignment"
+                                       asp-action="Assign"
+                                       asp-route-caseId="@item.Id"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Assign
+                                    </a>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="13" class="text-center text-muted">
+                                No case records found for assignment.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

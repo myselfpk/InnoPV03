@@ -1,0 +1,180 @@
+﻿@model InnoPV.Web.Models.CaseAssignment.CaseAssignmentViewModel
+
+@{
+    ViewData["Title"] = "Assign Case";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Assign Case</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <a asp-controller="CaseAssignment"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Current Assignment</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Status:</strong>
+                    <div>
+                        <span class="badge bg-info text-dark">
+                            @Model.Status
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Current Role:</strong>
+                    <div>
+                        @(string.IsNullOrWhiteSpace(Model.CurrentAssignedRole) ? "Not Assigned" : Model.CurrentAssignedRole)
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Current User:</strong>
+                    <div>
+                        @(string.IsNullOrWhiteSpace(Model.CurrentAssignedUserName) ? "Not Assigned" : Model.CurrentAssignedUserName)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>New Assignment</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="CaseAssignment"
+                  asp-action="Assign"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                <input type="hidden" asp-for="Status" />
+                <input type="hidden" asp-for="CurrentAssignedRole" />
+                <input type="hidden" asp-for="CurrentAssignedUserId" />
+                <input type="hidden" asp-for="CurrentAssignedUserName" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="AssignToRole" class="form-label">
+                            Assign To Role <span class="text-danger">*</span>
+                        </label>
+
+                        <select asp-for="AssignToRole"
+                                asp-items="Model.RoleOptions"
+                                class="form-select"
+                                id="assignToRole">
+                            <option value="">-- Select Role --</option>
+                        </select>
+
+                        <span asp-validation-for="AssignToRole" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="AssignToUserId" class="form-label">
+                            Assign To User <span class="text-danger">*</span>
+                        </label>
+
+                        <select asp-for="AssignToUserId"
+                                asp-items="Model.UserOptions"
+                                class="form-select"
+                                id="assignToUser">
+                            <option value="">-- Select User --</option>
+                        </select>
+
+                        <span asp-validation-for="AssignToUserId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Remarks" class="form-label">
+                            Assignment Remarks
+                        </label>
+
+                        <textarea asp-for="Remarks"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Enter assignment remarks, if any"></textarea>
+
+                        <span asp-validation-for="Remarks" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Are you sure you want to assign this case?');">
+                    Assign Case
+                </button>
+
+                <a asp-controller="CaseAssignment"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            $('#assignToRole').on('change', function () {
+                var selectedRole = $(this).val();
+                var userDropdown = $('#assignToUser');
+
+                userDropdown.empty();
+                userDropdown.append($('<option></option>').val('').text('-- Select User --'));
+
+                if (!selectedRole) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("GetUsersByRole", "CaseAssignment")',
+                    type: 'GET',
+                    data: { role: selectedRole },
+                    success: function (data) {
+                        $.each(data, function (index, item) {
+                            userDropdown.append(
+                                $('<option></option>')
+                                    .val(item.userId)
+                                    .text(item.displayName)
+                            );
+                        });
+                    },
+                    error: function () {
+                        alert('Unable to load users for selected role.');
+                    }
+                });
+            });
+        });
+    </script>
+}

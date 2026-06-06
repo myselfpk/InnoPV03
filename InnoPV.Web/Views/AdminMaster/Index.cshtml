@@ -1,0 +1,82 @@
+﻿@using InnoPV.Domain.Enums
+
+@{
+    ViewData["Title"] = "Master Data";
+}
+
+<div class="container-fluid mt-3">
+    <div class="mb-4">
+        <h3>Master Data Setup</h3>
+        <p class="text-muted mb-0">
+            Manage product, sponsor, study and PV dropdown masters.
+        </p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Product Master</h5>
+                    <p class="text-muted">Manage product/drug details.</p>
+
+                    <a asp-controller="AdminMaster"
+                       asp-action="Products"
+                       class="btn btn-primary btn-sm">
+                        Open Product Master
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Sponsor Master</h5>
+                    <p class="text-muted">Manage sponsor/client/MAH details.</p>
+
+                    <a asp-controller="AdminMaster"
+                       asp-action="Sponsors"
+                       class="btn btn-primary btn-sm">
+                        Open Sponsor Master
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5>Study Master</h5>
+                    <p class="text-muted">Manage study/protocol details.</p>
+
+                    <a asp-controller="AdminMaster"
+                       asp-action="Studies"
+                       class="btn btn-primary btn-sm">
+                        Open Study Master
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <h5>Common PV Masters</h5>
+    <p class="text-muted">
+        Manage dropdown values used in PV case entry and review workflow.
+    </p>
+
+    <div class="row g-3">
+        @foreach (CommonMasterType type in Enum.GetValues(typeof(CommonMasterType)))
+        {
+            <div class="col-md-3">
+                <a asp-controller="AdminMaster"
+                   asp-action="Common"
+                   asp-route-type="@type"
+                   class="btn btn-outline-secondary w-100">
+                    @type
+                </a>
+            </div>
+        }
+    </div>
+</div>

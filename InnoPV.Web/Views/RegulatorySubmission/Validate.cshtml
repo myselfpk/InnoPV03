@@ -1,0 +1,214 @@
+@model InnoPV.Web.Models.SubmissionValidation.SubmissionReadinessValidationViewModel
+
+@{
+    ViewData["Title"] = "Submission Readiness Validation";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Submission Readiness Validation</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="RegulatorySubmission"
+               asp-action="ExportValidationReport"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-dark">
+                Export CSV
+            </a>
+
+            <a asp-controller="RegulatorySubmission"
+               asp-action="Index"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-secondary">
+                Back to Submissions
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Validation Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Status:</strong>
+                    <div>
+                        <span class="badge bg-info text-dark">@Model.Status</span>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Required Failed:</strong>
+                    <div>
+                        @if (Model.RequiredFailedCount > 0)
+                        {
+                            <span class="badge bg-danger">@Model.RequiredFailedCount</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">0</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Submission Gate:</strong>
+                    <div>
+                        @if (Model.CanSubmit)
+                        {
+                            <span class="badge bg-success">Ready for submission</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Blocked</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.CanSubmit)
+    {
+        <div class="alert alert-danger">
+            Submission is blocked. Resolve all failed required checks before creating or submitting the regulatory package.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            All required checks passed. Regulatory submission can proceed.
+        </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Required Submission Checks</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th style="width:180px;">Section</th>
+                        <th style="width:260px;">Check</th>
+                        <th style="width:120px;">Result</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.RequiredChecks.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.RequiredChecks)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.SectionName</td>
+                                <td>@item.CheckDescription</td>
+                                <td>
+                                    @if (item.IsPassed)
+                                    {
+                                        <span class="badge bg-success">Passed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Failed</span>
+                                    }
+                                </td>
+                                <td>@item.Message</td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                No required checks configured.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <strong>Warnings</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th style="width:180px;">Section</th>
+                        <th style="width:260px;">Check</th>
+                        <th style="width:120px;">Result</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.WarningChecks.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.WarningChecks)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.SectionName</td>
+                                <td>@item.CheckDescription</td>
+                                <td>
+                                    @if (item.IsPassed)
+                                    {
+                                        <span class="badge bg-success">Passed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Warning</span>
+                                    }
+                                </td>
+                                <td>@item.Message</td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">
+                                No warnings found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

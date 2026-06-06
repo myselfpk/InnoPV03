@@ -1,0 +1,100 @@
+﻿@model InnoPV.Web.Models.Admin.StudyMasterViewModel
+
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <label asp-for="StudyTitle" class="form-label">
+            Study Title <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="StudyTitle"
+               class="form-control"
+               placeholder="Enter study title" />
+
+        <span asp-validation-for="StudyTitle" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ProtocolNo" class="form-label">
+            Protocol No.
+        </label>
+
+        <input asp-for="ProtocolNo"
+               class="form-control"
+               placeholder="Enter protocol number" />
+
+        <span asp-validation-for="ProtocolNo" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="StudyCode" class="form-label">
+            Study Code
+        </label>
+
+        <input asp-for="StudyCode"
+               class="form-control"
+               placeholder="Enter study code" />
+
+        <span asp-validation-for="StudyCode" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="SponsorMasterId" class="form-label">
+            Sponsor
+        </label>
+
+        <select asp-for="SponsorMasterId"
+                asp-items="Model.SponsorOptions"
+                class="form-select">
+            <option value="">-- Select Sponsor --</option>
+        </select>
+
+        <span asp-validation-for="SponsorMasterId" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="Indication" class="form-label">
+            Indication
+        </label>
+
+        <input asp-for="Indication"
+               class="form-control"
+               placeholder="Enter indication" />
+
+        <span asp-validation-for="Indication" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="StudyType" class="form-label">
+            Study Type
+        </label>
+
+        <input asp-for="StudyType"
+               class="form-control"
+               placeholder="Clinical Trial / PMS / Observational / BA-BE" />
+
+        <span asp-validation-for="StudyType" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Remarks" class="form-label">
+            Remarks
+        </label>
+
+        <textarea asp-for="Remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter remarks, if any"></textarea>
+
+        <span asp-validation-for="Remarks" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,223 @@
+﻿@model InnoPV.Web.Models.CaseFollowUp.CaseFollowUpIndexViewModel
+
+@{
+    ViewData["Title"] = "Case Follow-ups";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Case Follow-ups</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <div>
+            @if (Model.CanAddFollowUp)
+            {
+                <a asp-controller="CaseFollowUp"
+                   asp-action="Create"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-primary">
+                    + Add Follow-up
+                </a>
+            }
+
+            <a asp-controller="PvCaseEntry"
+               asp-action="Patient"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-success">
+                Case Entry
+            </a>
+
+            <a asp-controller="CaseInbox"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back to Inbox
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Follow-ups</h6>
+                    <h3>@Model.TotalFollowUps</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Pending</h6>
+                    <h3>@Model.PendingFollowUps</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Processed</h6>
+                    <h3>@Model.ProcessedFollowUps</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Current Status</h6>
+                    <h5>
+                        <span class="badge bg-info text-dark">@Model.Status</span>
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Case Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Product:</strong>
+                    <div>@Model.ProductName</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Event:</strong>
+                    <div>@Model.EventTerm</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Follow-up List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Follow-up No</th>
+                        <th>Receipt Date</th>
+                        <th>Source</th>
+                        <th>Received From</th>
+                        <th>Description</th>
+                        <th>Additional Information</th>
+                        <th>Status</th>
+                        <th>Processed Remarks</th>
+                        <th style="width:260px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.FollowUps.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.FollowUps)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td>
+                                    <strong>@item.FollowUpNo</strong>
+                                </td>
+
+                                <td>@item.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+
+                                <td>@item.Source</td>
+
+                                <td>@item.ReceivedFrom</td>
+
+                                <td>@item.Description</td>
+
+                                <td>@item.AdditionalInformation</td>
+
+                                <td>
+                                    @if (item.IsProcessed)
+                                    {
+                                        <span class="badge bg-success">Processed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    }
+                                </td>
+
+                                <td>@item.ProcessedRemarks</td>
+
+                                <td>
+                                    @if (!item.IsProcessed)
+                                    {
+                                        <form asp-controller="CaseFollowUp"
+                                              asp-action="MarkProcessed"
+                                              method="post"
+                                              onsubmit="return confirm('Are you sure you want to mark this follow-up as processed?');">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <input type="hidden" name="FollowUpId" value="@item.Id" />
+                                            <input type="hidden" name="PvCaseId" value="@item.PvCaseId" />
+
+                                            <textarea name="ProcessedRemarks"
+                                                      class="form-control form-control-sm mb-2"
+                                                      rows="2"
+                                                      placeholder="Processed remarks"></textarea>
+
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                Mark Processed
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            Processed on @(item.ProcessedOnUtc.HasValue ? item.ProcessedOnUtc.Value.ToString("dd-MMM-yyyy HH:mm") : "-")
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">
+                                No follow-up records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

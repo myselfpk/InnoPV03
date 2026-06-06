@@ -1,0 +1,147 @@
+﻿@{
+    var caseId = (long)(ViewBag.PvCaseId ?? 0);
+    var caseNo = Convert.ToString(ViewBag.CaseNo);
+    var activeTab = Convert.ToString(ViewBag.ActiveTab);
+    var isReadOnly = Convert.ToBoolean(ViewBag.IsReadOnly ?? false);
+}
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <strong>Case No:</strong> @caseNo
+                @if (isReadOnly)
+                {
+                    <span class="badge bg-danger ms-2">Read-only</span>
+                }
+            </div>
+
+            <div>
+                <a asp-controller="CaseCompleteReport"
+                   asp-action="ExportPdf"
+                   asp-route-caseId="@caseId"
+                   class="btn btn-sm btn-danger">
+                    Download PDF
+                </a>
+
+                <a asp-controller="CaseCompleteReport"
+                   asp-action="ExportWord"
+                   asp-route-caseId="@caseId"
+                   class="btn btn-sm btn-primary">
+                    Download Word
+                </a>
+
+                <a asp-controller="CaseCompleteReport"
+                   asp-action="ExportExcel"
+                   asp-route-caseId="@caseId"
+                   class="btn btn-sm btn-success">
+                    Download Excel
+                </a>
+
+                <a asp-controller="CaseCompleteReport"
+                   asp-action="Index"
+                   class="btn btn-sm btn-outline-secondary">
+                    Report Center
+                </a>
+            </div>
+
+            <a asp-controller="PvCase"
+               asp-action="Index"
+               class="btn btn-sm btn-outline-secondary">
+                Back to Case List
+            </a>
+        </div>
+
+        <ul class="nav nav-pills flex-wrap">
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "Patient" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="Patient"
+                   asp-route-caseId="@caseId">
+                    Patient
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "Reporter" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="Reporter"
+                   asp-route-caseId="@caseId">
+                    Reporter
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "AdverseEvent" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="AdverseEvent"
+                   asp-route-caseId="@caseId">
+                    Adverse Event
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "SuspectProduct" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="SuspectProduct"
+                   asp-route-caseId="@caseId">
+                    Suspect Product
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "ConcomitantMedications" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="ConcomitantMedications"
+                   asp-route-caseId="@caseId">
+                    Concomitant Medications
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "LabDetails" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="LabDetails"
+                   asp-route-caseId="@caseId">
+                    Lab Details
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "Narrative" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="Narrative"
+                   asp-route-caseId="@caseId">
+                    Narrative
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "Attachments" ? "active" : "")"
+                   asp-controller="PvCaseEntry"
+                   asp-action="Attachments"
+                   asp-route-caseId="@caseId">
+                    Attachments
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "FollowUps" ? "active" : "")"
+                   asp-controller="CaseFollowUp"
+                   asp-action="Index"
+                   asp-route-caseId="@caseId">
+                    Follow-ups
+                </a>
+            </li>
+
+            <li class="nav-item me-1 mb-1">
+                <a class="nav-link @(activeTab == "RegulatorySubmission" ? "active" : "")"
+                   asp-controller="RegulatorySubmission"
+                   asp-action="Index"
+                   asp-route-caseId="@caseId">
+                    Submissions
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

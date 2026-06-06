@@ -1,0 +1,130 @@
+﻿@model InnoPV.Web.Models.Account.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>InnoPV Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+            body {
+                min-height: 100vh;
+                background: linear-gradient(135deg, #f4f7fb, #dfe8f5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: Arial, sans-serif;
+            }
+
+            .login-card {
+                width: 100%;
+                max-width: 430px;
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 32px;
+                box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+            }
+
+            .brand-title {
+                font-weight: 700;
+                color: #17324d;
+                text-align: center;
+                margin-bottom: 6px;
+            }
+
+            .brand-subtitle {
+                text-align: center;
+                color: #6c757d;
+                font-size: 14px;
+                margin-bottom: 28px;
+            }
+
+            .form-label {
+                font-weight: 600;
+                color: #34495e;
+            }
+
+            .btn-login {
+                background: #17324d;
+                border-color: #17324d;
+                font-weight: 600;
+            }
+
+            .btn-login:hover {
+                background: #0f2438;
+                border-color: #0f2438;
+            }
+
+            .footer-text {
+                margin-top: 22px;
+                text-align: center;
+                font-size: 12px;
+                color: #6c757d;
+            }
+
+            .validation-summary-errors ul {
+                margin-bottom: 0;
+                padding-left: 18px;
+            }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h3 class="brand-title">InnoPV</h3>
+        <div class="brand-subtitle">Pharmacovigilance Case Management System</div>
+
+        <form asp-controller="Account" asp-action="Login" method="post" autocomplete="off">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Email Address</label>
+                <input asp-for="Email" class="form-control" placeholder="Enter email address" autofocus />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Password</label>
+                <input asp-for="Password" class="form-control" placeholder="Enter password" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <div class="text-end mb-3">
+                <a asp-controller="Account"
+                   asp-action="ForgotPassword">
+                    Forgot Password?
+                </a>
+            </div>
+
+            <div class="mb-3 form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login w-100">
+                Sign In
+            </button>
+        </form>
+
+        <div class="footer-text">
+            © @DateTime.Now.Year IR Innovate Research Pvt. Ltd.
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

@@ -1,0 +1,113 @@
+﻿@model InnoPV.Web.Models.Shared.PvCaseActionButtonsViewModel
+
+<div class="d-flex flex-wrap gap-1 pv-case-actions">
+    @if (Model.ShowView)
+    {
+        <a asp-controller="PvCase"
+           asp-action="Details"
+           asp-route-id="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-primary">
+            View
+        </a>
+    }
+
+    @if (Model.ShowEdit && (User.IsInRole("Admin") || User.IsInRole("PV Associate")))
+    {
+        <a asp-controller="PvCase"
+           asp-action="Edit"
+           asp-route-id="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-primary">
+            Edit
+        </a>
+    }
+
+    @if (Model.ShowEntry)
+    {
+        <a asp-controller="PvCaseEntry"
+           asp-action="Patient"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-success">
+            Entry
+        </a>
+    }
+
+    @if (Model.ShowNarrative)
+    {
+        <a asp-controller="PvCaseEntry"
+           asp-action="Narrative"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-info">
+            Narrative
+        </a>
+    }
+
+    @if (Model.ShowChecklist)
+    {
+        <a asp-controller="CaseWorkflow"
+           asp-action="Checklist"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-warning">
+            Checklist
+        </a>
+    }
+
+    @if (Model.ShowHistory)
+    {
+        <a asp-controller="CaseHistory"
+           asp-action="Index"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-dark">
+            History
+        </a>
+    }
+
+    @if (Model.ShowDuplicate)
+    {
+        <a asp-controller="DuplicateCheck"
+           asp-action="Check"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-danger">
+            Duplicate
+        </a>
+    }
+
+    @if (Model.ShowFollowUp)
+    {
+        <a asp-controller="CaseFollowUp"
+           asp-action="Index"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-info">
+            Follow-up
+        </a>
+    }
+
+    @if (Model.ShowSubmission)
+    {
+        <a asp-controller="RegulatorySubmission"
+           asp-action="Index"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-secondary">
+            Submission
+        </a>
+    }
+
+    @if (Model.ShowAssign && (User.IsInRole("Admin") || User.IsInRole("PV Manager")))
+    {
+        <a asp-controller="CaseAssignment"
+           asp-action="Assign"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-secondary">
+            Assign
+        </a>
+    }
+
+    @if (Model.ShowClosure && (User.IsInRole("Admin") || User.IsInRole("Medical Reviewer")))
+    {
+        <a asp-controller="CaseClosure"
+           asp-action="Validate"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-sm btn-outline-info">
+            Closure
+        </a>
+    }
+</div>

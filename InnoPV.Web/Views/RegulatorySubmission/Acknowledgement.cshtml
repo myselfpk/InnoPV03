@@ -1,0 +1,116 @@
+﻿@model InnoPV.Web.Models.RegulatorySubmission.RegulatorySubmissionAcknowledgementViewModel
+
+@{
+    ViewData["Title"] = "Submission Acknowledgement";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Submission Acknowledgement</h3>
+            <p class="text-muted mb-0">
+                Submission No: <strong>@Model.SubmissionNo</strong> |
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <a asp-controller="RegulatorySubmission"
+           asp-action="Index"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Acknowledgement Details</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="RegulatorySubmission"
+                  asp-action="Acknowledgement"
+                  method="post"
+                  enctype="multipart/form-data"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="SubmissionId" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="SubmissionNo" />
+                <input type="hidden" asp-for="CaseNo" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="AcknowledgementReceivedDate" class="form-label">
+                            Acknowledgement Received Date <span class="text-danger">*</span>
+                        </label>
+
+                        <input asp-for="AcknowledgementReceivedDate"
+                               asp-format="{0:yyyy-MM-dd}"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="AcknowledgementReceivedDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="ReferenceNo" class="form-label">
+                            Acknowledgement / Reference No.
+                        </label>
+
+                        <input asp-for="ReferenceNo"
+                               class="form-control"
+                               placeholder="Enter acknowledgement/reference number" />
+
+                        <span asp-validation-for="ReferenceNo" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="AcknowledgementDocument" class="form-label">
+                            Acknowledgement Document
+                        </label>
+
+                        <input asp-for="AcknowledgementDocument"
+                               type="file"
+                               class="form-control"
+                               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="AcknowledgementRemarks" class="form-label">
+                            Acknowledgement Remarks
+                        </label>
+
+                        <textarea asp-for="AcknowledgementRemarks"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Enter acknowledgement remarks"></textarea>
+
+                        <span asp-validation-for="AcknowledgementRemarks" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-warning"
+                        onclick="return confirm('Are you sure acknowledgement has been received?');">
+                    Save Acknowledgement
+                </button>
+
+                <a asp-controller="RegulatorySubmission"
+                   asp-action="Index"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

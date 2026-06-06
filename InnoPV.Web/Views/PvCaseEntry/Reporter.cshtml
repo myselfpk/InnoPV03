@@ -1,0 +1,155 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseReporterDetailViewModel
+
+@{
+    ViewData["Title"] = "Reporter Details";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "Reporter";
+    ViewBag.IsReadOnly = Model.IsReadOnly;
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Reporter Details</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="PvCaseEntry"
+                  asp-action="Reporter"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                @if (Model.IsReadOnly)
+                {
+                    <div class="alert alert-warning">
+                        This case is read-only. Reporter fields are disabled.
+                    </div>
+                }
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <fieldset disabled="@Model.IsReadOnly">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReporterName" class="form-label">
+                            Reporter Name <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="ReporterName" class="form-control" />
+                        <span asp-validation-for="ReporterName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ReporterType" class="form-label">Reporter Type</label>
+                        <select asp-for="ReporterType" asp-items="Model.ReporterTypeOptions" class="form-select">
+                            <option value="">-- Select Reporter Type --</option>
+                        </select>
+                        <span asp-validation-for="ReporterType" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Qualification" class="form-label">Qualification</label>
+                        <input asp-for="Qualification" class="form-control" />
+                        <span asp-validation-for="Qualification" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="OrganizationName" class="form-label">Organization Name</label>
+                        <input asp-for="OrganizationName" class="form-control" />
+                        <span asp-validation-for="OrganizationName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Department" class="form-label">Department</label>
+                        <input asp-for="Department" class="form-control" />
+                        <span asp-validation-for="Department" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Phone" class="form-label">Phone</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DateOfReport" class="form-label">Date of Report</label>
+                        <input asp-for="DateOfReport" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                        <span asp-validation-for="DateOfReport" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Address" class="form-label">Address</label>
+                        <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Address" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="City" class="form-label">City</label>
+                        <input asp-for="City" class="form-control" />
+                        <span asp-validation-for="City" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="State" class="form-label">State</label>
+                        <input asp-for="State" class="form-control" />
+                        <span asp-validation-for="State" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Country" class="form-label">Country</label>
+                        <input asp-for="Country" class="form-control" />
+                        <span asp-validation-for="Country" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <div class="form-check">
+                            <input asp-for="ConsentForFollowUp" class="form-check-input" />
+                            <label asp-for="ConsentForFollowUp" class="form-check-label">
+                                Consent available for follow-up
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="ReporterRemarks" class="form-label">Reporter Remarks</label>
+                        <textarea asp-for="ReporterRemarks" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="ReporterRemarks" class="text-danger small"></span>
+                    </div>
+                </div>
+                </fieldset>
+
+                @if (!Model.IsReadOnly)
+                {
+                    <button type="submit" class="btn btn-primary">Save Reporter Details</button>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

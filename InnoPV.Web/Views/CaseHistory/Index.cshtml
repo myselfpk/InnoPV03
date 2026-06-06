@@ -1,0 +1,228 @@
+﻿@model InnoPV.Web.Models.CaseHistory.CaseHistoryViewModel
+
+@{
+    ViewData["Title"] = "Case History";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Case History</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="PvCaseEntry"
+               asp-action="Patient"
+               asp-route-caseId="@Model.PvCaseId"
+               class="btn btn-outline-success">
+                Case Entry
+            </a>
+
+            <a asp-controller="PvCase"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back to Case List
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Case Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Case Source:</strong>
+                    <div>@Model.CaseSource</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Receipt Date:</strong>
+                    <div>@Model.ReceiptDate.ToString("dd-MMM-yyyy")</div>
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Status:</strong>
+                    <div>
+                        <span class="badge bg-info text-dark">
+                            @Model.Status
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="caseHistoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active"
+                    id="comments-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#comments"
+                    type="button"
+                    role="tab">
+                Workflow Comments
+            </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="audit-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#audit"
+                    type="button"
+                    role="tab">
+                Audit Trail
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="caseHistoryTabsContent">
+        <div class="tab-pane fade show active"
+             id="comments"
+             role="tabpanel"
+             aria-labelledby="comments-tab">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong>Workflow Comments</strong>
+                </div>
+
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th style="width:140px;">Type</th>
+                                <th style="width:180px;">From Role</th>
+                                <th style="width:180px;">To Role</th>
+                                <th>Comment</th>
+                                <th style="width:180px;">Created By</th>
+                                <th style="width:180px;">Created On</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.Comments.Any())
+                            {
+                                var index = 1;
+
+                                foreach (var item in Model.Comments)
+                                {
+                                    <tr>
+                                        <td>@index</td>
+                                        <td>
+                                            @if (item.CommentType == "Return")
+                                            {
+                                                <span class="badge bg-danger">Return</span>
+                                            }
+                                            else if (item.CommentType == "Submit")
+                                            {
+                                                <span class="badge bg-success">Submit</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@item.CommentType</span>
+                                            }
+                                        </td>
+                                        <td>@item.FromRole</td>
+                                        <td>@item.ToRole</td>
+                                        <td>@item.CommentText</td>
+                                        <td>@item.CreatedBy</td>
+                                        <td>@item.CreatedOnUtc.ToString("dd-MMM-yyyy HH:mm")</td>
+                                    </tr>
+
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">
+                                        No workflow comments found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade"
+             id="audit"
+             role="tabpanel"
+             aria-labelledby="audit-tab">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <strong>Audit Trail</strong>
+                </div>
+
+                <div class="card-body table-responsive">
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th style="width:170px;">Date/Time</th>
+                                <th style="width:150px;">Entity</th>
+                                <th style="width:130px;">Action</th>
+                                <th style="width:160px;">Field</th>
+                                <th>Old Value</th>
+                                <th>New Value</th>
+                                <th>Remarks</th>
+                                <th style="width:180px;">Performed By</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.AuditTrails.Any())
+                            {
+                                var index = 1;
+
+                                foreach (var item in Model.AuditTrails)
+                                {
+                                    <tr>
+                                        <td>@index</td>
+                                        <td>@item.PerformedOnUtc.ToString("dd-MMM-yyyy HH:mm")</td>
+                                        <td>@item.EntityName</td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                @item.ActionType
+                                            </span>
+                                        </td>
+                                        <td>@item.FieldName</td>
+                                        <td>@item.OldValue</td>
+                                        <td>@item.NewValue</td>
+                                        <td>@item.Remarks</td>
+                                        <td>@item.PerformedByUserName</td>
+                                    </tr>
+
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        No audit trail records found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

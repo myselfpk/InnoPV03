@@ -1,0 +1,101 @@
+﻿@model InnoPV.Web.Models.Workflow.ReturnCaseViewModel
+
+@{
+    ViewData["Title"] = "Return Case";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Return Case</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <a asp-controller="CaseWorkflow"
+           asp-action="Checklist"
+           asp-route-caseId="@Model.PvCaseId"
+           class="btn btn-outline-secondary">
+            Back to Checklist
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-header bg-light">
+            <strong>Return Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Case No:</strong>
+                    <div>@Model.CaseNo</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Return From:</strong>
+                    <div>@Model.FromRole</div>
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Return To:</strong>
+                    <div>@Model.ToRole</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Return Comment</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="CaseWorkflow"
+                  asp-action="Return"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                <input type="hidden" asp-for="FromRole" />
+                <input type="hidden" asp-for="ToRole" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="CommentText" class="form-label">
+                        Return Comment <span class="text-danger">*</span>
+                    </label>
+
+                    <textarea asp-for="CommentText"
+                              class="form-control"
+                              rows="5"
+                              placeholder="Please enter the reason for returning this case"></textarea>
+
+                    <span asp-validation-for="CommentText" class="text-danger small"></span>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-danger"
+                        onclick="return confirm('Are you sure you want to return this case?');">
+                    Return Case
+                </button>
+
+                <a asp-controller="CaseWorkflow"
+                   asp-action="Checklist"
+                   asp-route-caseId="@Model.PvCaseId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

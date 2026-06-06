@@ -1,0 +1,313 @@
+﻿@model InnoPV.Web.Models.PvCase.PvCaseEditViewModel
+
+@{
+    ViewData["Title"] = "Edit PV Case";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Edit PV Case</h3>
+            <p class="text-muted mb-0">
+                Update initial case intake information and validity criteria.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="PvCase"
+               asp-action="Details"
+               asp-route-id="@Model.Id"
+               class="btn btn-outline-primary">
+                View Case
+            </a>
+
+            <a asp-controller="PvCase"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+                Back
+            </a>
+        </div>
+    </div>
+
+    <partial name="_TempDataAlerts" />
+
+    <form asp-controller="PvCase"
+          asp-action="Edit"
+          method="post"
+          autocomplete="off">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CaseNo" />
+        <input type="hidden" asp-for="Status" />
+        <input type="hidden" asp-for="DueDate" />
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Case Intake Details</strong>
+                    <div class="small text-muted">
+                        Case No: @Model.CaseNo
+                    </div>
+                </div>
+
+                <span class="badge bg-info text-dark">
+                    @Model.Status
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="CaseNo" class="form-label">
+                            Case No
+                        </label>
+
+                        <input asp-for="CaseNo"
+                               class="form-control"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="CaseSource" class="form-label">
+                            Case Source <span class="text-danger">*</span>
+                        </label>
+
+                        <select asp-for="CaseSource"
+                                asp-items="Model.CaseSourceOptions"
+                                class="form-select">
+                            <option value="">-- Select Case Source --</option>
+                        </select>
+
+                        <span asp-validation-for="CaseSource" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="ReceiptDate" class="form-label">
+                            Receipt Date <span class="text-danger">*</span>
+                        </label>
+
+                        <input asp-for="ReceiptDate"
+                               asp-format="{0:yyyy-MM-dd}"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="ReceiptDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="InitialReporterName" class="form-label">
+                            Reporter Name
+                        </label>
+
+                        <input asp-for="InitialReporterName"
+                               class="form-control"
+                               placeholder="Enter reporter name" />
+
+                        <span asp-validation-for="InitialReporterName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="InitialPatientIdentifier" class="form-label">
+                            Patient Identifier
+                        </label>
+
+                        <input asp-for="InitialPatientIdentifier"
+                               class="form-control"
+                               placeholder="Initials / Patient ID / Age-Gender" />
+
+                        <span asp-validation-for="InitialPatientIdentifier" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="InitialProductName" class="form-label">
+                            Suspect Product
+                        </label>
+
+                        <select asp-for="InitialProductName"
+                                asp-items="Model.ProductOptions"
+                                class="form-select">
+                            <option value="">-- Select Product --</option>
+                        </select>
+
+                        <span asp-validation-for="InitialProductName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="InitialEventTerm" class="form-label">
+                            Adverse Event / Reaction
+                        </label>
+
+                        <input asp-for="InitialEventTerm"
+                               class="form-control"
+                               placeholder="e.g. Rash, Nausea, Headache" />
+
+                        <span asp-validation-for="InitialEventTerm" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DueDate" class="form-label">
+                            Due Date
+                        </label>
+
+                        <input value="@(Model.DueDate.HasValue ? Model.DueDate.Value.ToString("dd-MMM-yyyy") : "-")"
+                               class="form-control"
+                               readonly />
+
+                        <small class="text-muted">
+                            Due date will be recalculated after update.
+                        </small>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Narrative" class="form-label">
+                            Initial Narrative
+                        </label>
+
+                        <textarea asp-for="Narrative"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter initial case narrative"></textarea>
+
+                        <span asp-validation-for="Narrative" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Remarks" class="form-label">
+                            Remarks
+                        </label>
+
+                        <textarea asp-for="Remarks"
+                                  class="form-control"
+                                  rows="2"
+                                  placeholder="Enter remarks, if any"></textarea>
+
+                        <span asp-validation-for="Remarks" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Validity Criteria</strong>
+            </div>
+
+            <div class="card-body">
+                <p class="text-muted">
+                    A valid ICSR should have identifiable patient, identifiable reporter, suspect product and adverse event.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsPatientIdentifiable" class="form-check-input" />
+                            <label asp-for="IsPatientIdentifiable" class="form-check-label">
+                                Identifiable Patient
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsReporterIdentifiable" class="form-check-input" />
+                            <label asp-for="IsReporterIdentifiable" class="form-check-label">
+                                Identifiable Reporter
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsSuspectProductAvailable" class="form-check-input" />
+                            <label asp-for="IsSuspectProductAvailable" class="form-check-label">
+                                Suspect Product Available
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsAdverseEventAvailable" class="form-check-input" />
+                            <label asp-for="IsAdverseEventAvailable" class="form-check-label">
+                                Adverse Event Available
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small text-muted">
+                    If all four criteria are checked, the case will be considered valid.
+                    If any criterion is unchecked, the case will move to Invalid Follow-up Required.
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Initial Seriousness</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="form-check">
+                    <input asp-for="IsSerious" class="form-check-input" />
+                    <label asp-for="IsSerious" class="form-check-label">
+                        Mark as Serious Case
+                    </label>
+                </div>
+
+                <small class="text-muted">
+                    Serious case due date will be recalculated as receipt date + 15 days.
+                    Non-serious case due date will be recalculated as receipt date + 90 days.
+                </small>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3 border-warning">
+            <div class="card-header bg-warning">
+                <strong>Reason for Change</strong>
+            </div>
+
+            <div class="card-body">
+                <label asp-for="ChangeReason" class="form-label">
+                    Reason for Change <span class="text-danger">*</span>
+                </label>
+
+                <textarea asp-for="ChangeReason"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Enter reason for updating this case"></textarea>
+
+                <span asp-validation-for="ChangeReason" class="text-danger small"></span>
+
+                <small class="text-muted">
+                    This reason will be captured in audit trail for changed fields.
+                </small>
+            </div>
+        </div>
+
+        <div class="alert alert-info mb-3" role="alert">
+            <strong>Data Completeness Score:</strong> @Model.CompletenessScore%
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary"
+                onclick="return confirm('Are you sure you want to update this PV case?');">
+            Update Case
+        </button>
+
+        <a asp-controller="PvCase"
+           asp-action="Details"
+           asp-route-id="@Model.Id"
+           class="btn btn-outline-secondary">
+            Cancel
+        </a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

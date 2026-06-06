@@ -1,0 +1,147 @@
+﻿@model List<InnoPV.Web.Models.PvCaseEntry.CaseConcomitantMedicationViewModel>
+
+@{
+    ViewData["Title"] = "Concomitant Medications";
+
+    var caseId = (long)ViewBag.PvCaseId;
+    var caseNo = Convert.ToString(ViewBag.CaseNo);
+    var isReadOnly = Convert.ToBoolean(ViewBag.IsReadOnly ?? false);
+
+    ViewBag.ActiveTab = "ConcomitantMedications";
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4>Concomitant Medications</h4>
+            <p class="text-muted mb-0">
+                Case No: <strong>@caseNo</strong>
+            </p>
+        </div>
+
+        @if (!isReadOnly)
+        {
+            <a asp-controller="PvCaseEntry"
+               asp-action="CreateConcomitantMedication"
+               asp-route-caseId="@caseId"
+               class="btn btn-primary">
+                + Add Medication
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Medication List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Medication Name</th>
+                        <th>Dose</th>
+                        <th>Route</th>
+                        <th>Frequency</th>
+                        <th>Start Date</th>
+                        <th>Stop Date</th>
+                        <th>Indication</th>
+                        <th>For AE Treatment</th>
+                        <th>Status</th>
+                        <th style="width:100px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.MedicationName</td>
+                                <td>
+                                    @item.Dose @item.DoseUnit
+                                </td>
+                                <td>@item.Route</td>
+                                <td>@item.Frequency</td>
+                                <td>
+                                    @(item.TherapyStartDate.HasValue ? item.TherapyStartDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+                                <td>
+                                    @(item.TherapyStopDate.HasValue ? item.TherapyStopDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+                                <td>@item.Indication</td>
+                                <td>
+                                    @if (item.IsMedicationForEventTreatment)
+                                    {
+                                        <span class="badge bg-primary">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">No</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!isReadOnly)
+                                    {
+                                        <a asp-controller="PvCaseEntry"
+                                           asp-action="EditConcomitantMedication"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Edit
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="PvCaseEntry"
+                                           asp-action="EditConcomitantMedication"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            View
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">
+                                No concomitant medication records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

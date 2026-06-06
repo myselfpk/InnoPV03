@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="InnoPV.Api/InnoPV.Api.csproj" />
+  <Project Path="InnoPV.Application/InnoPV.Application.csproj" />
+  <Project Path="InnoPV.Domain/InnoPV.Domain.csproj" />
+  <Project Path="InnoPV.Infrastructure/InnoPV.Infrastructure.csproj" />
+  <Project Path="InnoPV.Shared/InnoPV.Shared.csproj" />
+  <Project Path="InnoPV.Web/InnoPV.Web.csproj" />
+</Solution>

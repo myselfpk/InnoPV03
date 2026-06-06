@@ -1,0 +1,156 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CasePatientDetailViewModel
+
+@{
+    ViewData["Title"] = "Patient Details";
+    ViewBag.PvCaseId = Model.PvCaseId;
+    ViewBag.CaseNo = Model.CaseNo;
+    ViewBag.ActiveTab = "Patient";
+    ViewBag.IsReadOnly = Model.IsReadOnly;
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Patient Details</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="PvCaseEntry"
+                  asp-action="Patient"
+                  method="post"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PvCaseId" />
+                <input type="hidden" asp-for="CaseNo" />
+                @if (Model.IsReadOnly)
+                {
+                    <div class="alert alert-warning">
+                        This case is read-only. Data entry fields are disabled.
+                    </div>
+                }
+
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                <fieldset disabled="@Model.IsReadOnly">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="PatientInitials" class="form-label">Patient Initials</label>
+                        <input asp-for="PatientInitials" class="form-control" placeholder="e.g. AB" />
+                        <span asp-validation-for="PatientInitials" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="PatientIdentifier" class="form-label">Patient Identifier</label>
+                        <input asp-for="PatientIdentifier" class="form-control" placeholder="Patient ID / initials / age-gender" />
+                        <span asp-validation-for="PatientIdentifier" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                        <input asp-for="DateOfBirth" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+                        <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Age" class="form-label">Age</label>
+                        <input asp-for="Age" type="number" class="form-control" />
+                        <span asp-validation-for="Age" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="AgeUnit" class="form-label">Age Unit</label>
+                        <select asp-for="AgeUnit" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Years</option>
+                            <option>Months</option>
+                            <option>Days</option>
+                            <option>Unknown</option>
+                        </select>
+                        <span asp-validation-for="AgeUnit" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Gender" class="form-label">Gender</label>
+                        <select asp-for="Gender" class="form-select">
+                            <option value="">-- Select --</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                            <option>Unknown</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="WeightKg" class="form-label">Weight Kg</label>
+                        <input asp-for="WeightKg" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="WeightKg" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="HeightCm" class="form-label">Height Cm</label>
+                        <input asp-for="HeightCm" type="number" step="0.01" class="form-control" />
+                        <span asp-validation-for="HeightCm" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3 d-flex align-items-center">
+                        <div class="form-check mt-4">
+                            <input asp-for="IsPregnant" class="form-check-input" />
+                            <label asp-for="IsPregnant" class="form-check-label">Pregnant</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="PregnancyRemarks" class="form-label">Pregnancy Remarks</label>
+                        <input asp-for="PregnancyRemarks" class="form-control" />
+                        <span asp-validation-for="PregnancyRemarks" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="RelevantMedicalHistory" class="form-label">Relevant Medical History</label>
+                        <textarea asp-for="RelevantMedicalHistory" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="RelevantMedicalHistory" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="AllergyHistory" class="form-label">Allergy History</label>
+                        <textarea asp-for="AllergyHistory" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="AllergyHistory" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="OtherPatientInformation" class="form-label">Other Patient Information</label>
+                        <textarea asp-for="OtherPatientInformation" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="OtherPatientInformation" class="text-danger small"></span>
+                    </div>
+                </div>
+                </fieldset>
+
+                @if (!Model.IsReadOnly)
+                {
+                    <button type="submit" class="btn btn-primary">Save Patient Details</button>
+                }
+               
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

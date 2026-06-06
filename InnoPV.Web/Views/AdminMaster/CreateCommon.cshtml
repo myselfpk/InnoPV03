@@ -1,0 +1,102 @@
+﻿@model InnoPV.Web.Models.Admin.CommonMasterOptionViewModel
+
+@{
+    ViewData["Title"] = "Create Master Option";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Create @Model.MasterType Option</h3>
+            <p class="text-muted mb-0">
+                Add new dropdown option for @Model.MasterType.
+            </p>
+        </div>
+
+        <a asp-controller="AdminMaster"
+           asp-action="Common"
+           asp-route-type="@Model.MasterType"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Option Details</strong>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="AdminMaster" asp-action="CreateCommon" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="MasterType" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Name" class="form-label">
+                            Name <span class="text-danger">*</span>
+                        </label>
+
+                        <input asp-for="Name" class="form-control" placeholder="Enter option name" />
+
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="Code" class="form-label">Code</label>
+
+                        <input asp-for="Code" class="form-control" placeholder="Enter code" />
+
+                        <span asp-validation-for="Code" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label asp-for="DisplayOrder" class="form-label">Display Order</label>
+
+                        <input asp-for="DisplayOrder" type="number" class="form-control" />
+
+                        <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+
+                        <textarea asp-for="Description"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter description, if any"></textarea>
+
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Save
+                </button>
+
+                <a asp-controller="AdminMaster"
+                   asp-action="Common"
+                   asp-route-type="@Model.MasterType"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,99 @@
+﻿@model InnoPV.Web.Models.Admin.SponsorMasterViewModel
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="SponsorName" class="form-label">
+            Sponsor Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="SponsorName"
+               class="form-control"
+               placeholder="Enter sponsor/client/MAH name" />
+
+        <span asp-validation-for="SponsorName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="SponsorCode" class="form-label">
+            Sponsor Code
+        </label>
+
+        <input asp-for="SponsorCode"
+               class="form-control"
+               placeholder="Enter sponsor code" />
+
+        <span asp-validation-for="SponsorCode" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ContactPerson" class="form-label">
+            Contact Person
+        </label>
+
+        <input asp-for="ContactPerson"
+               class="form-control"
+               placeholder="Enter contact person" />
+
+        <span asp-validation-for="ContactPerson" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ContactEmail" class="form-label">
+            Contact Email
+        </label>
+
+        <input asp-for="ContactEmail"
+               class="form-control"
+               placeholder="Enter contact email" />
+
+        <span asp-validation-for="ContactEmail" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-4 mb-3">
+        <label asp-for="ContactPhone" class="form-label">
+            Contact Phone
+        </label>
+
+        <input asp-for="ContactPhone"
+               class="form-control"
+               placeholder="Enter contact phone" />
+
+        <span asp-validation-for="ContactPhone" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Address" class="form-label">
+            Address
+        </label>
+
+        <textarea asp-for="Address"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Enter address"></textarea>
+
+        <span asp-validation-for="Address" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Remarks" class="form-label">
+            Remarks
+        </label>
+
+        <textarea asp-for="Remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter remarks, if any"></textarea>
+
+        <span asp-validation-for="Remarks" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>

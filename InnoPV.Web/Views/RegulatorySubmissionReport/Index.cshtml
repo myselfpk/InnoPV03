@@ -1,0 +1,397 @@
+﻿@model InnoPV.Web.Models.RegulatorySubmissionReport.RegulatorySubmissionReportViewModel
+
+@{
+    ViewData["Title"] = "Regulatory Submission Report";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>Regulatory Submission Report</h3>
+            <p class="text-muted mb-0">
+                Filter and export regulatory submission tracking data.
+            </p>
+        </div>
+
+        <a asp-controller="CaseReport"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back to Reports
+        </a>
+    </div>
+
+    <partial name="_TempDataAlerts" />
+
+    <form method="get" autocomplete="off">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-light">
+                <strong>Report Filters</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Case No</label>
+                        <input name="CaseNo"
+                               value="@Model.Filters.CaseNo"
+                               class="form-control"
+                               placeholder="Enter case no" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submission No</label>
+                        <input name="SubmissionNo"
+                               value="@Model.Filters.SubmissionNo"
+                               class="form-control"
+                               placeholder="Enter submission no" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submission Type</label>
+                        <select name="SubmissionType" class="form-select">
+                            <option value="">-- All Types --</option>
+
+                            @foreach (var item in Model.Filters.SubmissionTypeOptions)
+                            {
+                                if (item.Value == Model.Filters.SubmissionType)
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Recipient Authority</label>
+                        <select name="RecipientAuthority" class="form-select">
+                            <option value="">-- All Authorities --</option>
+
+                            @foreach (var item in Model.Filters.RecipientAuthorityOptions)
+                            {
+                                if (item.Value == Model.Filters.RecipientAuthority)
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submission Format</label>
+                        <select name="SubmissionFormat" class="form-select">
+                            <option value="">-- All Formats --</option>
+
+                            @foreach (var item in Model.Filters.SubmissionFormatOptions)
+                            {
+                                if (item.Value == Model.Filters.SubmissionFormat)
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submission Status</label>
+                        <select name="SubmissionStatus" class="form-select">
+                            <option value="">-- All Status --</option>
+
+                            @foreach (var item in Model.Filters.SubmissionStatusOptions)
+                            {
+                                if (Model.Filters.SubmissionStatus.HasValue &&
+                                    item.Value == Model.Filters.SubmissionStatus.Value.ToString())
+                                {
+                                    <option value="@item.Value" selected>@item.Text</option>
+                                }
+                                else
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Due Date From</label>
+                        <input name="DueDateFrom"
+                               value="@(Model.Filters.DueDateFrom.HasValue ? Model.Filters.DueDateFrom.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Due Date To</label>
+                        <input name="DueDateTo"
+                               value="@(Model.Filters.DueDateTo.HasValue ? Model.Filters.DueDateTo.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submitted Date From</label>
+                        <input name="SubmittedDateFrom"
+                               value="@(Model.Filters.SubmittedDateFrom.HasValue ? Model.Filters.SubmittedDateFrom.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Submitted Date To</label>
+                        <input name="SubmittedDateTo"
+                               value="@(Model.Filters.SubmittedDateTo.HasValue ? Model.Filters.SubmittedDateTo.Value.ToString("yyyy-MM-dd") : "")"
+                               type="date"
+                               class="form-control" />
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Overdue</label>
+                        <select name="IsOverdue" class="form-select">
+                            <option value="">-- All --</option>
+
+                            @if (Model.Filters.IsOverdue == true)
+                            {
+                                <option value="true" selected>Overdue Only</option>
+                                <option value="false">Not Overdue</option>
+                            }
+                            else if (Model.Filters.IsOverdue == false)
+                            {
+                                <option value="true">Overdue Only</option>
+                                <option value="false" selected>Not Overdue</option>
+                            }
+                            else
+                            {
+                                <option value="true">Overdue Only</option>
+                                <option value="false">Not Overdue</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        formaction="@Url.Action("Index", "RegulatorySubmissionReport")"
+                        formmethod="get"
+                        class="btn btn-primary">
+                    Search
+                </button>
+
+                <button type="submit"
+                        formaction="@Url.Action("ExportCsv", "RegulatorySubmissionReport")"
+                        formmethod="get"
+                        class="btn btn-success">
+                    Export CSV
+                </button>
+
+                <a asp-controller="RegulatorySubmissionReport"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+                    Reset
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total</h6>
+                    <h3>@Model.TotalCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Pending</h6>
+                    <h3>@Model.PendingCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Submitted</h6>
+                    <h3>@Model.SubmittedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Ack Pending</h6>
+                    <h3>@Model.AcknowledgementPendingCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Ack Received</h6>
+                    <h3>@Model.AcknowledgementReceivedCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue</h6>
+                    <h3 class="text-danger">@Model.OverdueCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Submission Report Result</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Case No</th>
+                        <th>Case Status</th>
+                        <th>Product</th>
+                        <th>Event</th>
+                        <th>Submission No</th>
+                        <th>Type</th>
+                        <th>Authority</th>
+                        <th>Format</th>
+                        <th>Submission Status</th>
+                        <th>Due Date</th>
+                        <th>Submitted Date</th>
+                        <th>Ack Date</th>
+                        <th>Reference No</th>
+                        <th>Overdue</th>
+                        <th style="width:170px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Submissions.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model.Submissions)
+                        {
+                            <tr>
+                                <td>@index</td>
+
+                                <td>
+                                    <strong>@item.CaseNo</strong>
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        @item.CaseStatus
+                                    </span>
+                                </td>
+
+                                <td>@item.ProductName</td>
+
+                                <td>@item.EventTerm</td>
+
+                                <td>
+                                    <strong>@item.SubmissionNo</strong>
+                                </td>
+
+                                <td>@item.SubmissionType</td>
+
+                                <td>@item.RecipientAuthority</td>
+
+                                <td>@item.SubmissionFormat</td>
+
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @item.SubmissionStatus
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @if (item.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger">
+                                            @item.DueDate.ToString("dd-MMM-yyyy")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @item.DueDate.ToString("dd-MMM-yyyy")
+                                    }
+                                </td>
+
+                                <td>
+                                    @(item.SubmittedDate.HasValue ? item.SubmittedDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+
+                                <td>
+                                    @(item.AcknowledgementReceivedDate.HasValue ? item.AcknowledgementReceivedDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+
+                                <td>@item.ReferenceNo</td>
+
+                                <td>
+                                    @if (item.IsOverdue)
+                                    {
+                                        <span class="badge bg-danger">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">No</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <a asp-controller="RegulatorySubmission"
+                                           asp-action="Index"
+                                           asp-route-caseId="@item.PvCaseId"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Open
+                                        </a>
+
+                                        <a asp-controller="CaseHistory"
+                                           asp-action="Index"
+                                           asp-route-caseId="@item.PvCaseId"
+                                           class="btn btn-sm btn-outline-dark">
+                                            History
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="16" class="text-center text-muted">
+                                No regulatory submission records found for selected filters.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

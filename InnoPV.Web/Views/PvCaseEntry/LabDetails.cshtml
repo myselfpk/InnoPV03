@@ -1,0 +1,130 @@
+﻿@model List<InnoPV.Web.Models.PvCaseEntry.CaseLabDetailViewModel>
+
+@{
+    ViewData["Title"] = "Lab Details";
+
+    var caseId = (long)ViewBag.PvCaseId;
+    var caseNo = Convert.ToString(ViewBag.CaseNo);
+
+    ViewBag.ActiveTab = "LabDetails";
+    var isReadOnly = Convert.ToBoolean(ViewBag.IsReadOnly ?? false);
+}
+
+<div class="container-fluid mt-3">
+    @await Html.PartialAsync("_CaseEntryTabs")
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4>Lab Details</h4>
+            <p class="text-muted mb-0">
+                Case No: <strong>@caseNo</strong>
+            </p>
+        </div>
+
+        @if (!isReadOnly)
+        {
+            <a asp-controller="PvCaseEntry"
+               asp-action="CreateLabDetail"
+               asp-route-caseId="@caseId"
+               class="btn btn-primary">
+                + Add Lab Detail
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Lab Detail List</strong>
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:60px;">#</th>
+                        <th>Test Name</th>
+                        <th>Test Date</th>
+                        <th>Result</th>
+                        <th>Unit</th>
+                        <th>Normal Range</th>
+                        <th>Clinical Significance</th>
+                        <th>Status</th>
+                        <th style="width:100px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        var index = 1;
+
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@item.TestName</td>
+                                <td>
+                                    @(item.TestDate.HasValue ? item.TestDate.Value.ToString("dd-MMM-yyyy") : "-")
+                                </td>
+                                <td>@item.TestResult</td>
+                                <td>@item.Unit</td>
+                                <td>@item.NormalRange</td>
+                                <td>@item.ClinicalSignificance</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!isReadOnly)
+                                    {
+                                        <a asp-controller="PvCaseEntry"
+                                           asp-action="EditLabDetail"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Edit
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="PvCaseEntry"
+                                           asp-action="EditLabDetail"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            View
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">
+                                No lab detail records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

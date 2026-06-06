@@ -1,0 +1,93 @@
+﻿@model InnoPV.Web.Models.Profile.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>My Profile</h3>
+            <p class="text-muted mb-0">
+                View your account details and password status.
+            </p>
+        </div>
+
+        <a asp-controller="Profile"
+           asp-action="ChangePassword"
+           class="btn btn-primary">
+            Change Password
+        </a>
+    </div>
+
+    <partial name="_TempDataAlerts" />
+
+    @if (Model.MustChangePassword)
+    {
+        <div class="alert alert-warning">
+            You are using a temporary password. Please change your password.
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>User Details</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <strong>Full Name</strong>
+                    <div>@Model.FullName</div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Email</strong>
+                    <div>@Model.Email</div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Mobile No</strong>
+                    <div>@Model.MobileNo</div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Designation</strong>
+                    <div>@Model.Designation</div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Department</strong>
+                    <div>@Model.Department</div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Role</strong>
+                    <div>
+                        <span class="badge bg-info text-dark">
+                            @Model.Role
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <strong>Password Status</strong>
+                    <div>
+                        @if (Model.MustChangePassword)
+                        {
+                            <span class="badge bg-warning text-dark">
+                                Password change required
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">
+                                Active
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

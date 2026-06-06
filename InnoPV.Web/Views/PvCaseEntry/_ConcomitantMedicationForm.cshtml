@@ -1,0 +1,124 @@
+﻿@model InnoPV.Web.Models.PvCaseEntry.CaseConcomitantMedicationViewModel
+
+<fieldset disabled="@Model.IsReadOnly">
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label asp-for="MedicationName" class="form-label">
+            Medication Name <span class="text-danger">*</span>
+        </label>
+
+        <input asp-for="MedicationName"
+               class="form-control"
+               placeholder="Enter concomitant medication name" />
+
+        <span asp-validation-for="MedicationName" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="Dose" class="form-label">Dose</label>
+
+        <input asp-for="Dose"
+               class="form-control"
+               placeholder="e.g. 500" />
+
+        <span asp-validation-for="Dose" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="DoseUnit" class="form-label">Dose Unit</label>
+
+        <input asp-for="DoseUnit"
+               class="form-control"
+               placeholder="mg / ml / tablet" />
+
+        <span asp-validation-for="DoseUnit" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="Route" class="form-label">Route</label>
+
+        <select asp-for="Route"
+                asp-items="Model.RouteOptions"
+                class="form-select">
+            <option value="">-- Select Route --</option>
+        </select>
+
+        <span asp-validation-for="Route" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="Frequency" class="form-label">Frequency</label>
+
+        <select asp-for="Frequency"
+                asp-items="Model.FrequencyOptions"
+                class="form-select">
+            <option value="">-- Select Frequency --</option>
+        </select>
+
+        <span asp-validation-for="Frequency" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="TherapyStartDate" class="form-label">Therapy Start Date</label>
+
+        <input asp-for="TherapyStartDate"
+               asp-format="{0:yyyy-MM-dd}"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="TherapyStartDate" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <label asp-for="TherapyStopDate" class="form-label">Therapy Stop Date</label>
+
+        <input asp-for="TherapyStopDate"
+               asp-format="{0:yyyy-MM-dd}"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="TherapyStopDate" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label asp-for="Indication" class="form-label">Indication</label>
+
+        <input asp-for="Indication"
+               class="form-control"
+               placeholder="Reason for medication" />
+
+        <span asp-validation-for="Indication" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6 mb-3 d-flex align-items-center">
+        <div class="form-check mt-4">
+            <input asp-for="IsMedicationForEventTreatment" class="form-check-input" />
+
+            <label asp-for="IsMedicationForEventTreatment" class="form-check-label">
+                Medication given for adverse event treatment
+            </label>
+        </div>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <label asp-for="Remarks" class="form-label">Remarks</label>
+
+        <textarea asp-for="Remarks"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Enter remarks, if any"></textarea>
+
+        <span asp-validation-for="Remarks" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-12 mb-3">
+        <div class="form-check">
+            <input asp-for="IsActive" class="form-check-input" />
+
+            <label asp-for="IsActive" class="form-check-label">
+                Active
+            </label>
+        </div>
+    </div>
+</div>
+</fieldset>

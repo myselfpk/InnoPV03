@@ -1,0 +1,107 @@
+﻿@model InnoPV.Web.Models.PvCase.PvCaseListItemViewModel
+
+@{
+    ViewData["Title"] = "PV Case Details";
+}
+
+<div class="container-fluid mt-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3>PV Case Details</h3>
+            <p class="text-muted mb-0">
+                Case No: <strong>@Model.CaseNo</strong>
+            </p>
+        </div>
+
+        <a asp-controller="PvCase"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <strong>Case Intake Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th style="width:250px;">Case No</th>
+                    <td>@Model.CaseNo</td>
+                </tr>
+                <tr>
+                    <th>Case Source</th>
+                    <td>@Model.CaseSource</td>
+                </tr>
+                <tr>
+                    <th>Receipt Date</th>
+                    <td>@Model.ReceiptDate.ToString("dd-MMM-yyyy")</td>
+                </tr>
+                <tr>
+                    <th>Reporter</th>
+                    <td>@Model.InitialReporterName</td>
+                </tr>
+                <tr>
+                    <th>Patient Identifier</th>
+                    <td>@Model.InitialPatientIdentifier</td>
+                </tr>
+                <tr>
+                    <th>Suspect Product</th>
+                    <td>@Model.InitialProductName</td>
+                </tr>
+                <tr>
+                    <th>Adverse Event</th>
+                    <td>@Model.InitialEventTerm</td>
+                </tr>
+                <tr>
+                    <th>Validity</th>
+                    <td>
+                        @if (Model.IsValidCase)
+                        {
+                            <span class="badge bg-success">Valid Case</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Invalid / Follow-up Required</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Seriousness</th>
+                    <td>
+                        @if (Model.IsSerious)
+                        {
+                            <span class="badge bg-danger">Serious</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Non-serious</span>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <th>Data Completeness</th>
+                    <td>
+                        <span class="badge bg-primary">@Model.CompletenessScore%</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Due Date</th>
+                    <td>
+                        @(Model.DueDate.HasValue ? Model.DueDate.Value.ToString("dd-MMM-yyyy") : "-")
+                    </td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        <span class="badge bg-info text-dark">
+                            @Model.Status
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
