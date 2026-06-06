@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize(Policy = AuthorizationPolicies.AdminOnly)]
 public class AdminMasterController : Controller
 {
     private readonly ApplicationDbContext _context;

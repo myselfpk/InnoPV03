@@ -11,7 +11,7 @@ using InnoPV.Web.Services.Email;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvManager)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
 public class CaseAssignmentController : Controller
 {
     private readonly ApplicationDbContext _context;

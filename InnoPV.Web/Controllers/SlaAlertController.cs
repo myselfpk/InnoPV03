@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvManager)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
 public class SlaAlertController : Controller
 {
     private readonly ISlaAlertService _slaAlertService;

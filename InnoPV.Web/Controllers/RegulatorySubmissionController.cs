@@ -13,7 +13,7 @@ using System.Text;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvManager + "," + AppRoles.MedicalReviewer)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvManagerOrMedicalReviewer)]
 public class RegulatorySubmissionController : Controller
 {
     private readonly ApplicationDbContext _context;

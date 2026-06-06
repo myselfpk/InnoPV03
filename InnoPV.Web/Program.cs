@@ -15,6 +15,7 @@ using InnoPV.Web.Services.CaseCompleteReport;
 using InnoPV.Web.Services.CaseIntake;
 using InnoPV.Web.Services.Workflow;
 using InnoPV.Web.Services.SubmissionValidation;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,20 +65,26 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy =>
-        policy.RequireRole(AppRoles.Admin));
+    options.AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOnly)));
 
-    options.AddPolicy("CanCreateCase", policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.PvAssociate));
+    options.AddPolicy(AuthorizationPolicies.AdminOrPvManager, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOrPvManager)));
 
-    options.AddPolicy("CanReviewCase", policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.PvManager));
+    options.AddPolicy(AuthorizationPolicies.AdminOrPvAssociate, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOrPvAssociate)));
 
-    options.AddPolicy("CanMedicalReview", policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.MedicalReviewer));
+    options.AddPolicy(AuthorizationPolicies.AdminOrPvManagerOrMedicalReviewer, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOrPvManagerOrMedicalReviewer)));
 
-    options.AddPolicy("CanViewAuditTrail", policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.PvManager));
+    options.AddPolicy(AuthorizationPolicies.AdminOrPvAssociateOrPvManager, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOrPvAssociateOrPvManager)));
+
+    options.AddPolicy(AuthorizationPolicies.AuthenticatedPvUser, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AuthenticatedPvUser)));
+
+    options.AddPolicy(AuthorizationPolicies.AdminOrMedicalReviewer, policy =>
+        policy.RequireAuthenticatedUser().AddRequirements(new PermissionAuthorizationRequirement(PermissionActions.AdminOrMedicalReviewer)));
 });
 
 builder.Services.AddControllersWithViews();
@@ -97,6 +104,7 @@ builder.Services.AddScoped<ISlaAlertService, SlaAlertService>();
 builder.Services.AddHostedService<SlaAlertHostedService>();
 builder.Services.AddScoped<IRolePermissionMatrixService, RolePermissionMatrixService>();
 builder.Services.AddScoped<ICaseSecurityService, CaseSecurityService>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 builder.Services.AddScoped<IDuplicateCheckService, DuplicateCheckService>();
 builder.Services.AddScoped<ICaseIntakeValidationService, CaseIntakeValidationService>();

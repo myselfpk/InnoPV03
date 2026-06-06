@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin)]
+[Authorize(Policy = AuthorizationPolicies.AdminOnly)]
 public class AdminController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;

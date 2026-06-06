@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvManager + "," + AppRoles.MedicalReviewer)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvManagerOrMedicalReviewer)]
 public class CaseClosureController : Controller
 {
     private readonly ICaseClosureValidationService _closureValidationService;

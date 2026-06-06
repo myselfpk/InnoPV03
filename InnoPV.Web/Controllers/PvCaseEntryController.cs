@@ -12,7 +12,7 @@ using InnoPV.Web.Services.Security;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvAssociate + "," + AppRoles.PvManager + "," + AppRoles.MedicalReviewer)]
+[Authorize(Policy = AuthorizationPolicies.AuthenticatedPvUser)]
 public class PvCaseEntryController : Controller
 {
     private readonly ApplicationDbContext _context;

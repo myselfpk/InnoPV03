@@ -12,7 +12,7 @@ using InnoPV.Web.Services.Security;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvAssociate + "," + AppRoles.PvManager)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvAssociateOrPvManager)]
 public class DuplicateCheckController : Controller
 {
     private readonly ApplicationDbContext _context;

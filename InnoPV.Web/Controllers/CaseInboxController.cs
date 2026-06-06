@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvAssociate + "," + AppRoles.PvManager + "," + AppRoles.MedicalReviewer)]
+[Authorize(Policy = AuthorizationPolicies.AuthenticatedPvUser)]
 public class CaseInboxController : Controller
 {
     private readonly ApplicationDbContext _context;

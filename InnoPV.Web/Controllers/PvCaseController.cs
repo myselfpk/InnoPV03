@@ -16,7 +16,7 @@ using System.Text.RegularExpressions;
 
 namespace InnoPV.Web.Controllers;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvAssociate)]
+[Authorize(Policy = AuthorizationPolicies.AdminOrPvAssociate)]
 public class PvCaseController : Controller
 {
     private readonly ApplicationDbContext _context;

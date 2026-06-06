@@ -41,4 +41,10 @@
 - `dotnet build .\InnoPV.Web\InnoPV.Web.csproj` passed after each step
 
 ## Next Steps (Planned)
-1. Optional hardening: convert `[Authorize(Roles=...)]` strings to policy-based attributes mapped from centralized permission matrix
+1. Completed hardening: migrated role-string based authorize attributes to policy-based authorization powered by centralized permission matrix
+
+## Authorization Hardening Completed
+- Added policy constants and permission-based authorization requirement/handler
+- Mapped policy actions in centralized role-permission matrix
+- Replaced all controller-level `[Authorize(Roles=...)]` usage with `[Authorize(Policy=...)]`
+- Registered authorization handler and policy definitions in startup pipeline

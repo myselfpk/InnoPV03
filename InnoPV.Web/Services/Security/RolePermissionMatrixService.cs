@@ -8,6 +8,14 @@ public class RolePermissionMatrixService : IRolePermissionMatrixService
     private static readonly IReadOnlyDictionary<string, IReadOnlyCollection<string>> Matrix =
         new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase)
         {
+            [PermissionActions.AdminOnly] = new[] { AppRoles.Admin },
+            [PermissionActions.AdminOrPvManager] = new[] { AppRoles.Admin, AppRoles.PvManager },
+            [PermissionActions.AdminOrPvAssociate] = new[] { AppRoles.Admin, AppRoles.PvAssociate },
+            [PermissionActions.AdminOrPvManagerOrMedicalReviewer] = new[] { AppRoles.Admin, AppRoles.PvManager, AppRoles.MedicalReviewer },
+            [PermissionActions.AdminOrPvAssociateOrPvManager] = new[] { AppRoles.Admin, AppRoles.PvAssociate, AppRoles.PvManager },
+            [PermissionActions.AuthenticatedPvUser] = new[] { AppRoles.Admin, AppRoles.PvAssociate, AppRoles.PvManager, AppRoles.MedicalReviewer },
+            [PermissionActions.AdminOrMedicalReviewer] = new[] { AppRoles.Admin, AppRoles.MedicalReviewer },
+
             [PermissionActions.ViewCase] = new[] { AppRoles.Admin, AppRoles.PvAssociate, AppRoles.PvManager, AppRoles.MedicalReviewer },
             [PermissionActions.EditCase] = new[] { AppRoles.Admin, AppRoles.PvAssociate, AppRoles.PvManager, AppRoles.MedicalReviewer },
             [PermissionActions.ProcessWorkflow] = new[] { AppRoles.Admin, AppRoles.PvAssociate, AppRoles.PvManager, AppRoles.MedicalReviewer },

@@ -43,7 +43,7 @@ public class DashboardController : Controller
         return View();
     }
 
-    [Authorize(Roles = AppRoles.Admin)]
+    [Authorize(Policy = AuthorizationPolicies.AdminOnly)]
     public async Task<IActionResult> AdminDashboard()
     {
         var today = DateTime.UtcNow.Date;
@@ -159,19 +159,19 @@ public class DashboardController : Controller
         return View(model);
     }
 
-    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvAssociate)]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrPvAssociate)]
     public IActionResult PvAssociateDashboard()
     {
         return View();
     }
 
-    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.PvManager)]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrPvManager)]
     public IActionResult PvManagerDashboard()
     {
         return View();
     }
 
-    [Authorize(Roles = AppRoles.Admin + "," + AppRoles.MedicalReviewer)]
+    [Authorize(Policy = AuthorizationPolicies.AdminOrMedicalReviewer)]
     public IActionResult MedicalReviewerDashboard()
     {
         return View();
