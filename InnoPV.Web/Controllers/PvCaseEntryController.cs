@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using InnoPV.Web.Services.Security;
+using InnoPV.Web.Services.FileUpload;
 
 namespace InnoPV.Web.Controllers;
 
@@ -17,19 +18,19 @@ public class PvCaseEntryController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IWebHostEnvironment _environment;
     private readonly ICaseSecurityService _caseSecurityService;
+    private readonly IFileUploadSecurityService _fileUploadSecurityService;
 
     public PvCaseEntryController(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
-    IWebHostEnvironment environment,
-    ICaseSecurityService caseSecurityService)
+    ICaseSecurityService caseSecurityService,
+    IFileUploadSecurityService fileUploadSecurityService)
     {
         _context = context;
         _userManager = userManager;
-        _environment = environment;
         _caseSecurityService = caseSecurityService;
+        _fileUploadSecurityService = fileUploadSecurityService;
     }
 
     [HttpGet]
@@ -273,30 +274,70 @@ public class PvCaseEntryController : Controller
             return RedirectToAction("Index", "PvCase");
         }
 
-        var entity = await _context.CaseAdverseEventDetails
-            .FirstOrDefaultAsync(x => x.PvCaseId == caseId && !x.IsDeleted);
+        ViewBag.PvCaseId = caseId;
+        ViewBag.CaseNo = pvCase.CaseNo;
+        ViewBag.IsReadOnly = _caseSecurityService.IsCaseReadOnly(pvCase);
+
+        var list = await _context.CaseAdverseEventDetails
+            .Where(x => x.PvCaseId == caseId && !x.IsDeleted)
+            .OrderBy(x => x.EventStartDate)
+            .ThenBy(x => x.EventTerm)
+            .Select(x => new CaseAdverseEventDetailViewModel
+            {
+                Id = x.Id,
+                PvCaseId = x.PvCaseId,
+                CaseNo = pvCase.CaseNo,
+                IsReadOnly = _caseSecurityService.IsCaseReadOnly(pvCase),
+                EventTerm = x.EventTerm,
+                EventDescription = x.EventDescription,
+                EventStartDate = x.EventStartDate,
+                EventStopDate = x.EventStopDate,
+                IsSerious = x.IsSerious,
+                SeriousnessCriteria = x.SeriousnessCriteria,
+                Severity = x.Severity,
+                Outcome = x.Outcome,
+                DeathDate = x.DeathDate,
+                CauseOfDeath = x.CauseOfDeath,
+                WasHospitalized = x.WasHospitalized,
+                HospitalizationDate = x.HospitalizationDate,
+                DischargeDate = x.DischargeDate,
+                TreatmentGivenForEvent = x.TreatmentGivenForEvent,
+                EventRemarks = x.EventRemarks
+            })
+            .ToListAsync();
+
+        return View(list);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CreateAdverseEvent(long caseId)
+    {
+        if (!await EnsureCaseViewableAsync(caseId))
+        {
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var pvCase = await GetCaseAsync(caseId);
+
+        if (pvCase == null)
+        {
+            TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction("Index", "PvCase");
+        }
+
+        if (_caseSecurityService.IsCaseReadOnly(pvCase))
+        {
+            TempData["ErrorMessage"] = "This case is read-only. New adverse event cannot be added.";
+            return RedirectToAction(nameof(AdverseEvent), new { caseId });
+        }
 
         var model = new CaseAdverseEventDetailViewModel
         {
-            Id = entity?.Id ?? 0,
             PvCaseId = caseId,
             CaseNo = pvCase.CaseNo,
             IsReadOnly = _caseSecurityService.IsCaseReadOnly(pvCase),
-            EventTerm = entity?.EventTerm ?? pvCase.InitialEventTerm ?? string.Empty,
-            EventDescription = entity?.EventDescription,
-            EventStartDate = entity?.EventStartDate,
-            EventStopDate = entity?.EventStopDate,
-            IsSerious = entity?.IsSerious ?? pvCase.IsSerious,
-            SeriousnessCriteria = entity?.SeriousnessCriteria,
-            Severity = entity?.Severity,
-            Outcome = entity?.Outcome,
-            DeathDate = entity?.DeathDate,
-            CauseOfDeath = entity?.CauseOfDeath,
-            WasHospitalized = entity?.WasHospitalized ?? false,
-            HospitalizationDate = entity?.HospitalizationDate,
-            DischargeDate = entity?.DischargeDate,
-            TreatmentGivenForEvent = entity?.TreatmentGivenForEvent,
-            EventRemarks = entity?.EventRemarks
+            EventTerm = pvCase.InitialEventTerm ?? string.Empty,
+            IsSerious = pvCase.IsSerious
         };
 
         await LoadAdverseEventDropdownsAsync(model);
@@ -306,12 +347,13 @@ public class PvCaseEntryController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AdverseEvent(CaseAdverseEventDetailViewModel model)
+    public async Task<IActionResult> CreateAdverseEvent(CaseAdverseEventDetailViewModel model)
     {
         if (!await EnsureCaseEditableAsync(model.PvCaseId))
         {
             return RedirectToAction("Index", "CaseInbox");
         }
+
         await LoadAdverseEventDropdownsAsync(model);
 
         if (model.EventStopDate.HasValue &&
@@ -336,52 +378,153 @@ public class PvCaseEntryController : Controller
 
         var currentUserId = _userManager.GetUserId(User);
 
-        var entity = await _context.CaseAdverseEventDetails
-            .FirstOrDefaultAsync(x => x.PvCaseId == model.PvCaseId && !x.IsDeleted);
-
-        if (entity == null)
+        var entity = new CaseAdverseEventDetail
         {
-            entity = new CaseAdverseEventDetail
-            {
-                PvCaseId = model.PvCaseId,
-                CreatedBy = currentUserId,
-                CreatedOnUtc = DateTime.UtcNow
-            };
+            PvCaseId = model.PvCaseId,
+            CreatedBy = currentUserId,
+            CreatedOnUtc = DateTime.UtcNow
+        };
 
-            _context.CaseAdverseEventDetails.Add(entity);
-        }
-        else
-        {
-            entity.ModifiedBy = currentUserId;
-            entity.ModifiedOnUtc = DateTime.UtcNow;
-        }
+        ApplyAdverseEventModel(entity, model);
+        _context.CaseAdverseEventDetails.Add(entity);
 
-        entity.EventTerm = model.EventTerm.Trim();
-        entity.EventDescription = model.EventDescription?.Trim();
-        entity.EventStartDate = model.EventStartDate;
-        entity.EventStopDate = model.EventStopDate;
-        entity.IsSerious = model.IsSerious;
-        entity.SeriousnessCriteria = model.SeriousnessCriteria?.Trim();
-        entity.Severity = model.Severity?.Trim();
-        entity.Outcome = model.Outcome?.Trim();
-        entity.DeathDate = model.DeathDate;
-        entity.CauseOfDeath = model.CauseOfDeath?.Trim();
-        entity.WasHospitalized = model.WasHospitalized;
-        entity.HospitalizationDate = model.HospitalizationDate;
-        entity.DischargeDate = model.DischargeDate;
-        entity.TreatmentGivenForEvent = model.TreatmentGivenForEvent?.Trim();
-        entity.EventRemarks = model.EventRemarks?.Trim();
-
-        pvCase.InitialEventTerm = model.EventTerm.Trim();
-        pvCase.IsAdverseEventAvailable = true;
-        pvCase.IsSerious = model.IsSerious;
-        pvCase.DueDate = CalculateDueDate(pvCase.ReceiptDate, model.IsSerious);
-
+        await _context.SaveChangesAsync();
+        await RefreshCaseAdverseEventSummaryAsync(pvCase);
         UpdateCaseValidity(pvCase);
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = "Adverse event details saved successfully.";
+        TempData["SuccessMessage"] = "Adverse event saved successfully.";
         return RedirectToAction(nameof(AdverseEvent), new { caseId = model.PvCaseId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> EditAdverseEvent(long id)
+    {
+        var entity = await _context.CaseAdverseEventDetails
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+        if (entity == null)
+        {
+            TempData["ErrorMessage"] = "Adverse event not found.";
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        if (!await EnsureCaseViewableAsync(entity.PvCaseId))
+        {
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var pvCase = await GetCaseAsync(entity.PvCaseId);
+
+        if (pvCase == null)
+        {
+            TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var model = ToAdverseEventViewModel(entity, pvCase);
+        model.IsReadOnly = _caseSecurityService.IsCaseReadOnly(pvCase);
+
+        await LoadAdverseEventDropdownsAsync(model);
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditAdverseEvent(CaseAdverseEventDetailViewModel model)
+    {
+        if (!await EnsureCaseEditableAsync(model.PvCaseId))
+        {
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        await LoadAdverseEventDropdownsAsync(model);
+
+        if (model.EventStopDate.HasValue &&
+            model.EventStartDate.HasValue &&
+            model.EventStopDate.Value.Date < model.EventStartDate.Value.Date)
+        {
+            ModelState.AddModelError(nameof(model.EventStopDate), "Event stop date cannot be before event start date.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var entity = await _context.CaseAdverseEventDetails
+            .FirstOrDefaultAsync(x => x.Id == model.Id && x.PvCaseId == model.PvCaseId && !x.IsDeleted);
+
+        if (entity == null)
+        {
+            TempData["ErrorMessage"] = "Adverse event not found.";
+            return RedirectToAction(nameof(AdverseEvent), new { caseId = model.PvCaseId });
+        }
+
+        var pvCase = await GetCaseAsync(model.PvCaseId);
+
+        if (pvCase == null)
+        {
+            TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+
+        ApplyAdverseEventModel(entity, model);
+        entity.ModifiedBy = currentUserId;
+        entity.ModifiedOnUtc = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        await RefreshCaseAdverseEventSummaryAsync(pvCase);
+        UpdateCaseValidity(pvCase);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Adverse event updated successfully.";
+        return RedirectToAction(nameof(AdverseEvent), new { caseId = model.PvCaseId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAdverseEvent(long id)
+    {
+        var entity = await _context.CaseAdverseEventDetails
+            .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+
+        if (entity == null)
+        {
+            TempData["ErrorMessage"] = "Adverse event not found.";
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        if (!await EnsureCaseEditableAsync(entity.PvCaseId))
+        {
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var pvCase = await GetCaseAsync(entity.PvCaseId);
+
+        if (pvCase == null)
+        {
+            TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction("Index", "CaseInbox");
+        }
+
+        var currentUserId = _userManager.GetUserId(User);
+
+        entity.IsDeleted = true;
+        entity.IsActive = false;
+        entity.ModifiedBy = currentUserId;
+        entity.ModifiedOnUtc = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+        await RefreshCaseAdverseEventSummaryAsync(pvCase);
+        UpdateCaseValidity(pvCase);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Adverse event deleted successfully.";
+        return RedirectToAction(nameof(AdverseEvent), new { caseId = entity.PvCaseId });
     }
 
     [HttpGet]
@@ -1021,54 +1164,16 @@ public class PvCaseEntryController : Controller
             return View(model);
         }
 
-        if (model.File == null || model.File.Length == 0)
-        {
-            ModelState.AddModelError(nameof(model.File), "Please select a valid file.");
-            return View(model);
-        }
-
-        var originalFileName = Path.GetFileName(model.File.FileName);
-
-        if (string.IsNullOrWhiteSpace(originalFileName))
-        {
-            ModelState.AddModelError(nameof(model.File), "Invalid file name.");
-            return View(model);
-        }
-
-        var blockedFileNameChars = Path.GetInvalidFileNameChars();
-
-        if (originalFileName.Any(ch => blockedFileNameChars.Contains(ch)))
-        {
-            ModelState.AddModelError(nameof(model.File), "File name contains invalid characters.");
-            return View(model);
-        }
-
-        var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
-
-        var allowedExtensions = new[]
-        {
-    ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx", ".xls", ".xlsx"
-};
-
-        if (string.IsNullOrWhiteSpace(extension))
-        {
-            ModelState.AddModelError(nameof(model.File), "File extension is required.");
-            return View(model);
-        }
-
-        if (!allowedExtensions.Contains(extension))
-        {
-            ModelState.AddModelError(nameof(model.File), "Only PDF, image, Word and Excel files are allowed.");
-            return View(model);
-        }
-
         const long maxFileSize = 10 * 1024 * 1024;
+        var fileValidation = await _fileUploadSecurityService.ValidateDocumentAsync(model.File, maxFileSize);
 
-        if (model.File.Length > maxFileSize)
+        if (!fileValidation.IsValid)
         {
-            ModelState.AddModelError(nameof(model.File), "Maximum file size allowed is 10 MB.");
+            ModelState.AddModelError(nameof(model.File), fileValidation.ErrorMessage ?? "Invalid file.");
             return View(model);
         }
+
+        var uploadedFile = model.File!;
 
         var pvCase = await GetCaseAsync(model.PvCaseId);
 
@@ -1078,7 +1183,7 @@ public class PvCaseEntryController : Controller
             return RedirectToAction("Index", "PvCase");
         }
 
-        var uploadFolder = GetPrivateUploadFolder("pvcases", model.PvCaseId.ToString());
+        var uploadFolder = _fileUploadSecurityService.GetPrivateUploadFolder("pvcases", model.PvCaseId.ToString());
 
         if (!Directory.Exists(uploadFolder))
         {
@@ -1088,27 +1193,27 @@ public class PvCaseEntryController : Controller
         var storedFileName = await GenerateAttachmentFileNameAsync(
             model.PvCaseId,
             pvCase.CaseNo,
-            extension,
+            fileValidation.Extension,
             uploadFolder);
         var physicalPath = Path.Combine(uploadFolder, storedFileName);
 
         await using (var stream = new FileStream(physicalPath, FileMode.Create))
         {
-            await model.File.CopyToAsync(stream);
+            await uploadedFile.CopyToAsync(stream);
         }
 
-        var relativePath = ToStoredFilePath("pvcases", model.PvCaseId.ToString(), storedFileName);
+        var relativePath = _fileUploadSecurityService.ToStoredFilePath("pvcases", model.PvCaseId.ToString(), storedFileName);
         var currentUserId = _userManager.GetUserId(User) ?? string.Empty;
 
         var entity = new CaseAttachment
         {
             PvCaseId = model.PvCaseId,
             AttachmentType = model.AttachmentType.Trim(),
-            OriginalFileName = storedFileName,
+            OriginalFileName = fileValidation.OriginalFileName,
             StoredFileName = storedFileName,
             FilePath = relativePath,
-            ContentType = model.File.ContentType,
-            FileSizeBytes = model.File.Length,
+            ContentType = fileValidation.ContentType,
+            FileSizeBytes = uploadedFile.Length,
             Description = model.Description?.Trim(),
             UploadedByUserId = currentUserId,
             UploadedOnUtc = DateTime.UtcNow,
@@ -1143,7 +1248,7 @@ public class PvCaseEntryController : Controller
             return RedirectToAction("Index", "CaseInbox");
         }
 
-        var physicalPath = ResolveExistingStoredFilePath(attachment.FilePath);
+        var physicalPath = _fileUploadSecurityService.ResolvePrivateUploadPath(attachment.FilePath);
 
         if (physicalPath == null)
         {
@@ -1254,44 +1359,6 @@ public class PvCaseEntryController : Controller
             : receiptDate.Date.AddDays(90);
     }
 
-    private string GetPrivateUploadFolder(params string[] pathParts)
-    {
-        return Path.Combine(new[] { _environment.ContentRootPath, "App_Data", "uploads" }.Concat(pathParts).ToArray());
-    }
-
-    private string? ResolveExistingStoredFilePath(string storedPath)
-    {
-        var normalizedPath = storedPath
-            .TrimStart('/', '\\')
-            .Replace("/", Path.DirectorySeparatorChar.ToString())
-            .Replace("\\", Path.DirectorySeparatorChar.ToString());
-
-        var candidatePaths = new List<string>
-        {
-            Path.Combine(_environment.ContentRootPath, normalizedPath)
-        };
-
-        if (normalizedPath.StartsWith($"uploads{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-        {
-            candidatePaths.Add(Path.Combine(_environment.WebRootPath, normalizedPath));
-        }
-
-        foreach (var candidatePath in candidatePaths)
-        {
-            if (System.IO.File.Exists(candidatePath))
-            {
-                return candidatePath;
-            }
-        }
-
-        return null;
-    }
-
-    private static string ToStoredFilePath(params string[] pathParts)
-    {
-        return string.Join("/", new[] { "App_Data", "uploads" }.Concat(pathParts));
-    }
-
     private async Task<string> GenerateAttachmentFileNameAsync(
         long caseId,
         string caseNo,
@@ -1340,6 +1407,71 @@ public class PvCaseEntryController : Controller
     {
         model.SeriousnessCriteriaOptions = await GetCommonMasterOptionsAsync(CommonMasterType.SeriousnessCriteria);
         model.OutcomeOptions = await GetCommonMasterOptionsAsync(CommonMasterType.Outcome);
+    }
+
+    private static CaseAdverseEventDetailViewModel ToAdverseEventViewModel(
+        CaseAdverseEventDetail entity,
+        PvCase pvCase)
+    {
+        return new CaseAdverseEventDetailViewModel
+        {
+            Id = entity.Id,
+            PvCaseId = entity.PvCaseId,
+            CaseNo = pvCase.CaseNo,
+            IsReadOnly = false,
+            EventTerm = entity.EventTerm,
+            EventDescription = entity.EventDescription,
+            EventStartDate = entity.EventStartDate,
+            EventStopDate = entity.EventStopDate,
+            IsSerious = entity.IsSerious,
+            SeriousnessCriteria = entity.SeriousnessCriteria,
+            Severity = entity.Severity,
+            Outcome = entity.Outcome,
+            DeathDate = entity.DeathDate,
+            CauseOfDeath = entity.CauseOfDeath,
+            WasHospitalized = entity.WasHospitalized,
+            HospitalizationDate = entity.HospitalizationDate,
+            DischargeDate = entity.DischargeDate,
+            TreatmentGivenForEvent = entity.TreatmentGivenForEvent,
+            EventRemarks = entity.EventRemarks
+        };
+    }
+
+    private static void ApplyAdverseEventModel(
+        CaseAdverseEventDetail entity,
+        CaseAdverseEventDetailViewModel model)
+    {
+        entity.EventTerm = model.EventTerm.Trim();
+        entity.EventDescription = model.EventDescription?.Trim();
+        entity.EventStartDate = model.EventStartDate;
+        entity.EventStopDate = model.EventStopDate;
+        entity.IsSerious = model.IsSerious;
+        entity.SeriousnessCriteria = model.SeriousnessCriteria?.Trim();
+        entity.Severity = model.Severity?.Trim();
+        entity.Outcome = model.Outcome?.Trim();
+        entity.DeathDate = model.DeathDate;
+        entity.CauseOfDeath = model.CauseOfDeath?.Trim();
+        entity.WasHospitalized = model.WasHospitalized;
+        entity.HospitalizationDate = model.HospitalizationDate;
+        entity.DischargeDate = model.DischargeDate;
+        entity.TreatmentGivenForEvent = model.TreatmentGivenForEvent?.Trim();
+        entity.EventRemarks = model.EventRemarks?.Trim();
+    }
+
+    private async Task RefreshCaseAdverseEventSummaryAsync(PvCase pvCase)
+    {
+        var events = await _context.CaseAdverseEventDetails
+            .Where(x => x.PvCaseId == pvCase.Id && !x.IsDeleted)
+            .OrderBy(x => x.EventStartDate)
+            .ThenBy(x => x.EventTerm)
+            .ToListAsync();
+
+        pvCase.IsAdverseEventAvailable = events.Any();
+        pvCase.InitialEventTerm = events.FirstOrDefault()?.EventTerm;
+        pvCase.IsSerious = events.Any(x => x.IsSerious);
+        pvCase.DueDate = events.Any()
+            ? CalculateDueDate(pvCase.ReceiptDate, pvCase.IsSerious)
+            : null;
     }
 
     private async Task LoadSuspectProductDropdownsAsync(CaseSuspectProductDetailViewModel model)

@@ -15,6 +15,7 @@ using InnoPV.Web.Services.CaseCompleteReport;
 using InnoPV.Web.Services.CaseIntake;
 using InnoPV.Web.Services.Workflow;
 using InnoPV.Web.Services.SubmissionValidation;
+using InnoPV.Web.Services.FileUpload;
 using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -110,6 +111,7 @@ builder.Services.AddScoped<IDuplicateCheckService, DuplicateCheckService>();
 builder.Services.AddScoped<ICaseIntakeValidationService, CaseIntakeValidationService>();
 builder.Services.AddScoped<ICaseWorkflowTransitionService, CaseWorkflowTransitionService>();
 builder.Services.AddScoped<ISubmissionReadinessValidationService, SubmissionReadinessValidationService>();
+builder.Services.AddScoped<IFileUploadSecurityService, FileUploadSecurityService>();
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 {

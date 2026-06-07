@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InnoPV.Web.Services.Security;
 using InnoPV.Web.Services.SubmissionValidation;
+using InnoPV.Web.Services.FileUpload;
 using System.Text;
 
 namespace InnoPV.Web.Controllers;
@@ -18,22 +19,22 @@ public class RegulatorySubmissionController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IWebHostEnvironment _environment;
     private readonly ICaseSecurityService _caseSecurityService;
     private readonly ISubmissionReadinessValidationService _submissionReadinessValidationService;
+    private readonly IFileUploadSecurityService _fileUploadSecurityService;
 
     public RegulatorySubmissionController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        IWebHostEnvironment environment,
         ICaseSecurityService caseSecurityService,
-        ISubmissionReadinessValidationService submissionReadinessValidationService)
+        ISubmissionReadinessValidationService submissionReadinessValidationService,
+        IFileUploadSecurityService fileUploadSecurityService)
     {
         _context = context;
         _userManager = userManager;
-        _environment = environment;
         _caseSecurityService = caseSecurityService;
         _submissionReadinessValidationService = submissionReadinessValidationService;
+        _fileUploadSecurityService = fileUploadSecurityService;
     }
 
     [HttpGet]
@@ -564,9 +565,11 @@ public class RegulatorySubmissionController : Controller
             return RedirectToAction("Index", "CaseInbox");
         }
 
-        var physicalPath = ResolveStoredFilePath(submission.FilePath);
+        var physicalPath = _fileUploadSecurityService.ResolvePrivateUploadPath(
+            submission.FilePath,
+            "regulatory-submissions");
 
-        if (!System.IO.File.Exists(physicalPath))
+        if (physicalPath == null || !System.IO.File.Exists(physicalPath))
         {
             TempData["ErrorMessage"] = "Document file not found on server.";
             return RedirectToAction(nameof(Index), new { caseId = submission.PvCaseId });
@@ -600,31 +603,15 @@ public class RegulatorySubmissionController : Controller
             return;
         }
 
-        var originalFileName = Path.GetFileName(file.FileName);
-
-        var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
-
-        var allowedExtensions = new[]
-        {
-            ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx", ".xls", ".xlsx"
-        };
-
-        if (!allowedExtensions.Contains(extension))
-        {
-            throw new InvalidOperationException("Only PDF, image, Word and Excel files are allowed.");
-        }
-
         const long maxFileSize = 10 * 1024 * 1024;
+        var fileValidation = await _fileUploadSecurityService.ValidateDocumentAsync(file, maxFileSize);
 
-        if (file.Length > maxFileSize)
+        if (!fileValidation.IsValid)
         {
-            throw new InvalidOperationException("Maximum file size allowed is 10 MB.");
+            throw new InvalidOperationException(fileValidation.ErrorMessage ?? "Invalid file.");
         }
 
-        var uploadFolder = Path.Combine(
-            _environment.ContentRootPath,
-            "App_Data",
-            "uploads",
+        var uploadFolder = _fileUploadSecurityService.GetPrivateUploadFolder(
             "regulatory-submissions",
             pvCaseId.ToString());
 
@@ -633,7 +620,7 @@ public class RegulatorySubmissionController : Controller
             Directory.CreateDirectory(uploadFolder);
         }
 
-        var storedFileName = $"{Guid.NewGuid():N}{extension}";
+        var storedFileName = $"{Guid.NewGuid():N}{fileValidation.Extension}";
         var physicalPath = Path.Combine(uploadFolder, storedFileName);
 
         await using (var stream = new FileStream(physicalPath, FileMode.Create))
@@ -641,10 +628,13 @@ public class RegulatorySubmissionController : Controller
             await file.CopyToAsync(stream);
         }
 
-        submission.OriginalFileName = originalFileName;
+        submission.OriginalFileName = fileValidation.OriginalFileName;
         submission.StoredFileName = storedFileName;
-        submission.FilePath = $"App_Data/uploads/regulatory-submissions/{pvCaseId}/{storedFileName}";
-        submission.ContentType = file.ContentType;
+        submission.FilePath = _fileUploadSecurityService.ToStoredFilePath(
+            "regulatory-submissions",
+            pvCaseId.ToString(),
+            storedFileName);
+        submission.ContentType = fileValidation.ContentType;
         submission.FileSizeBytes = file.Length;
     }
 
@@ -672,16 +662,6 @@ public class RegulatorySubmissionController : Controller
 
         TempData["ErrorMessage"] = "You are not allowed to process this case.";
         return false;
-    }
-
-    private string ResolveStoredFilePath(string storedPath)
-    {
-        var normalizedPath = storedPath
-            .TrimStart('/', '\\')
-            .Replace("/", Path.DirectorySeparatorChar.ToString())
-            .Replace("\\", Path.DirectorySeparatorChar.ToString());
-
-        return Path.Combine(_environment.ContentRootPath, normalizedPath);
     }
 
     private void AddCaseComment(

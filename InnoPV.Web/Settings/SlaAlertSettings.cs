@@ -26,7 +26,7 @@ public class SlaAlertSettings
 
     public bool SendSummaryToPvManager { get; set; } = true;
 
-    public int DailyRunHour { get; set; } = 9;
+    public int DailyRunHour { get; set; } = 10;
 
     public int DailyRunMinute { get; set; } = 0;
 

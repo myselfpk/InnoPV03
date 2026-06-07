@@ -1,4 +1,5 @@
 ﻿using InnoPV.Domain.Entities;
+using InnoPV.Domain.Enums;
 using InnoPV.Domain.Identity;
 using InnoPV.Infrastructure.Data;
 using InnoPV.Web.Models.CaseAssignment;
@@ -36,17 +37,12 @@ public class CaseAssignmentController : Controller
     public async Task<IActionResult> Index()
     {
         var query = _context.PvCases
+            .AsNoTracking()
             .Where(x => !x.IsDeleted);
 
         if (!User.IsInRole(AppRoles.Admin))
         {
-            query = query.Where(x =>
-                x.CurrentAssignedRole == AppRoles.PvManager ||
-                x.CurrentAssignedRole == AppRoles.MedicalReviewer ||
-                x.Status == InnoPV.Domain.Enums.PvCaseStatus.SubmittedToPvManager ||
-                x.Status == InnoPV.Domain.Enums.PvCaseStatus.ResubmittedToPvManager ||
-                x.Status == InnoPV.Domain.Enums.PvCaseStatus.ReturnedByMedicalReviewer ||
-                x.Status == InnoPV.Domain.Enums.PvCaseStatus.ForwardedToMedicalReviewer);
+            query = query.Where(ManagerAssignableCasePredicate());
         }
 
         var cases = await query
@@ -77,6 +73,7 @@ public class CaseAssignmentController : Controller
             .ToList();
 
         var users = await _context.Users
+            .AsNoTracking()
             .Where(x => assignedUserIds.Contains(x.Id))
             .Select(x => new
             {
@@ -85,14 +82,15 @@ public class CaseAssignmentController : Controller
                 x.Email
             })
             .ToListAsync();
+        var usersById = users.ToDictionary(x => x.Id);
 
         foreach (var item in cases)
         {
             if (!string.IsNullOrWhiteSpace(item.CurrentAssignedUserId))
             {
-                var user = users.FirstOrDefault(x => x.Id == item.CurrentAssignedUserId);
-
-                item.CurrentAssignedUserName = user?.Email ?? user?.UserName;
+                item.CurrentAssignedUserName = usersById.TryGetValue(item.CurrentAssignedUserId, out var user)
+                    ? user.Email ?? user.UserName
+                    : null;
             }
         }
 
@@ -112,6 +110,12 @@ public class CaseAssignmentController : Controller
         if (pvCase == null)
         {
             TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!CanAssignCase(pvCase))
+        {
+            TempData["ErrorMessage"] = "You are not allowed to assign this case.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -170,6 +174,12 @@ public class CaseAssignmentController : Controller
         if (pvCase == null)
         {
             TempData["ErrorMessage"] = "Case not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!CanAssignCase(pvCase))
+        {
+            TempData["ErrorMessage"] = "You are not allowed to assign this case.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -357,6 +367,44 @@ public class CaseAssignmentController : Controller
     private bool IsRoleAllowedForAssignment(string role)
     {
         return GetAllowedRolesForAssignment().Contains(role);
+    }
+
+    private bool CanAssignCase(PvCase pvCase)
+    {
+        return User.IsInRole(AppRoles.Admin) || IsManagerAssignableCase(pvCase);
+    }
+
+    private static System.Linq.Expressions.Expression<Func<PvCase, bool>> ManagerAssignableCasePredicate()
+    {
+        return pvCase =>
+            pvCase.CurrentAssignedRole == AppRoles.PvManager
+            || pvCase.CurrentAssignedRole == AppRoles.MedicalReviewer
+            || pvCase.Status == PvCaseStatus.SubmittedToPvManager
+            || pvCase.Status == PvCaseStatus.ResubmittedToPvManager
+            || pvCase.Status == PvCaseStatus.ReturnedByMedicalReviewer
+            || pvCase.Status == PvCaseStatus.ForwardedToMedicalReviewer
+            || pvCase.Status == PvCaseStatus.PvManagerReviewPending
+            || pvCase.Status == PvCaseStatus.PvManagerReviewInProgress
+            || pvCase.Status == PvCaseStatus.SubmittedToMedicalReviewer
+            || pvCase.Status == PvCaseStatus.MedicalReviewPending
+            || pvCase.Status == PvCaseStatus.MedicalReviewInProgress
+            || pvCase.Status == PvCaseStatus.ReturnedToPvManager;
+    }
+
+    private static bool IsManagerAssignableCase(PvCase pvCase)
+    {
+        return pvCase.CurrentAssignedRole == AppRoles.PvManager
+               || pvCase.CurrentAssignedRole == AppRoles.MedicalReviewer
+               || pvCase.Status == PvCaseStatus.SubmittedToPvManager
+               || pvCase.Status == PvCaseStatus.ResubmittedToPvManager
+               || pvCase.Status == PvCaseStatus.ReturnedByMedicalReviewer
+               || pvCase.Status == PvCaseStatus.ForwardedToMedicalReviewer
+               || pvCase.Status == PvCaseStatus.PvManagerReviewPending
+               || pvCase.Status == PvCaseStatus.PvManagerReviewInProgress
+               || pvCase.Status == PvCaseStatus.SubmittedToMedicalReviewer
+               || pvCase.Status == PvCaseStatus.MedicalReviewPending
+               || pvCase.Status == PvCaseStatus.MedicalReviewInProgress
+               || pvCase.Status == PvCaseStatus.ReturnedToPvManager;
     }
 
     private void AddAuditTrail(

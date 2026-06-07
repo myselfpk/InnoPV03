@@ -1,0 +1,110 @@
+@model InnoPV.Web.Models.PvCaseEntry.CaseAdverseEventDetailViewModel
+
+<fieldset disabled="@Model.IsReadOnly">
+<div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="EventTerm" class="form-label">
+                Event Term <span class="text-danger">*</span>
+            </label>
+            <input asp-for="EventTerm" class="form-control" placeholder="e.g. Nausea, Rash, Headache" />
+            <span asp-validation-for="EventTerm" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="EventStartDate" class="form-label">Event Start Date</label>
+            <input asp-for="EventStartDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+            <span asp-validation-for="EventStartDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="EventStopDate" class="form-label">Event Stop Date</label>
+            <input asp-for="EventStopDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+            <span asp-validation-for="EventStopDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label asp-for="EventDescription" class="form-label">Event Description</label>
+            <textarea asp-for="EventDescription" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="EventDescription" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3 d-flex align-items-center">
+            <div class="form-check mt-4">
+                <input asp-for="IsSerious" class="form-check-input" />
+                <label asp-for="IsSerious" class="form-check-label">Serious Event</label>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="SeriousnessCriteria" class="form-label">Seriousness Criteria</label>
+            <select asp-for="SeriousnessCriteria" asp-items="Model.SeriousnessCriteriaOptions" class="form-select">
+                <option value="">-- Select --</option>
+            </select>
+            <span asp-validation-for="SeriousnessCriteria" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="Severity" class="form-label">Severity</label>
+            <select asp-for="Severity" class="form-select">
+                <option value="">-- Select --</option>
+                <option>Mild</option>
+                <option>Moderate</option>
+                <option>Severe</option>
+                <option>Unknown</option>
+            </select>
+            <span asp-validation-for="Severity" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="Outcome" class="form-label">Outcome</label>
+            <select asp-for="Outcome" asp-items="Model.OutcomeOptions" class="form-select">
+                <option value="">-- Select Outcome --</option>
+            </select>
+            <span asp-validation-for="Outcome" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label asp-for="DeathDate" class="form-label">Death Date</label>
+            <input asp-for="DeathDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+            <span asp-validation-for="DeathDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-8 mb-3">
+            <label asp-for="CauseOfDeath" class="form-label">Cause of Death</label>
+            <input asp-for="CauseOfDeath" class="form-control" />
+            <span asp-validation-for="CauseOfDeath" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3 d-flex align-items-center">
+            <div class="form-check mt-4">
+                <input asp-for="WasHospitalized" class="form-check-input" />
+                <label asp-for="WasHospitalized" class="form-check-label">Hospitalized</label>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="HospitalizationDate" class="form-label">Hospitalization Date</label>
+            <input asp-for="HospitalizationDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+            <span asp-validation-for="HospitalizationDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="DischargeDate" class="form-label">Discharge Date</label>
+            <input asp-for="DischargeDate" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control" />
+            <span asp-validation-for="DischargeDate" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label asp-for="TreatmentGivenForEvent" class="form-label">Treatment Given for Event</label>
+            <textarea asp-for="TreatmentGivenForEvent" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="TreatmentGivenForEvent" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-12 mb-3">
+            <label asp-for="EventRemarks" class="form-label">Event Remarks</label>
+            <textarea asp-for="EventRemarks" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="EventRemarks" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
+</fieldset>
